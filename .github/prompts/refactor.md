@@ -74,6 +74,6 @@ Verification:
 
 ---
 
-👉 Save this as `prompts/refactor.md` in your repo. Then you (or an Actions workflow) can feed it into Copilot or another LLM agent to drive repository-wide, safe refactoring PRs.
+👉 Save this as `.github/prompts/refactor.md` in your repo. Then you (or an Actions workflow) can feed it into Copilot or another LLM agent to drive repository-wide, safe refactoring PRs.
 
 ---
