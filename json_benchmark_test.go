@@ -12,8 +12,8 @@ import (
 )
 
 type TestData struct {
-	Status string `json:"status"`
-	Code   int    `json:"code"`
+	Status string      `json:"status"`
+	Code   int         `json:"code"`
 	Data   interface{} `json:"data"`
 }
 

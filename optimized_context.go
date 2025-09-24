@@ -13,13 +13,13 @@ import (
 func (c *Context) FastJSON(code int, obj interface{}) {
 	c.Status(code)
 	c.Header("Content-Type", "application/json; charset=utf-8")
-	
+
 	// Use sonic if available for faster marshaling
 	jsonBytes, err := json.API.Marshal(obj)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	_, _ = c.Writer.Write(jsonBytes)
 }
 
@@ -34,7 +34,7 @@ func (c *Context) PreMarshaledJSON(code int, jsonBytes []byte) {
 func (c *Context) StringFast(code int, text string) {
 	c.Status(code)
 	c.Header("Content-Type", "text/plain; charset=utf-8")
-	
+
 	// Zero-copy string to bytes conversion - safe for read-only usage
 	textBytes := []byte(text) // Keep it simple and safe for now
 	_, _ = c.Writer.Write(textBytes)

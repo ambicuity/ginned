@@ -46,7 +46,7 @@ func FastLoggerWithWriter(out io.Writer) HandlerFunc {
 
 		// Fast log formatting without fmt.Sprintf
 		latency := time.Since(start)
-		
+
 		buf = append(buf, "[GIN] "...)
 		buf = append(buf, start.Format("2006/01/02 - 15:04:05")...)
 		buf = append(buf, " | "...)
@@ -59,19 +59,19 @@ func FastLoggerWithWriter(out io.Writer) HandlerFunc {
 		buf = append(buf, c.Request.Method...)
 		buf = append(buf, " "...)
 		buf = append(buf, path...)
-		
+
 		if raw != "" {
 			buf = append(buf, "?"...)
 			buf = append(buf, raw...)
 		}
-		
+
 		if len(c.Errors) > 0 {
 			buf = append(buf, " | "...)
 			buf = append(buf, c.Errors.String()...)
 		}
-		
+
 		buf = append(buf, '\n')
-		
+
 		out.Write(buf)
 	}
 }

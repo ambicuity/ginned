@@ -37,10 +37,10 @@ const (
 	// Set GOMAXPROCS=runtime.NumCPU() for CPU-intensive workloads
 	// or GOMAXPROCS=runtime.NumCPU()*2 for I/O-intensive workloads
 	OptimalGOMAXPROCS = "Use GOMAXPROCS=runtime.NumCPU() for CPU-bound or NumCPU()*2 for I/O-bound"
-	
+
 	// Recommended build flags for maximum performance
 	OptimalBuildFlags = "-ldflags='-s -w' -tags='sonic' -gcflags='-l=4'"
-	
+
 	// Recommended server configuration
 	OptimalServerConfig = "ReadTimeout=5s, WriteTimeout=10s, IdleTimeout=60s, MaxHeaderBytes=1MB"
 )
