@@ -17,92 +17,86 @@ To run benchmarks manually, use:
 go test -bench=. -benchmem -benchtime=2s 2>/dev/null | grep '^Benchmark'
 
 Sample benchmark (BenchmarkOneRoute):
-BenchmarkOneRoute-4         	20068426	        55.96 ns/op	       3 B/op	       0 allocs/op
-BenchmarkOneRouteJSON-4     	 2806909	       455.3 ns/op	      73 B/op	       6 allocs/op
-BenchmarkOneRouteHTML-4     	  522745	      2218 ns/op	     447 B/op	      23 allocs/op
-BenchmarkOneRouteSet-4      	 3424134	       355.6 ns/op	     352 B/op	       4 allocs/op
-BenchmarkOneRouteString-4   	 6420375	       196.0 ns/op	      58 B/op	       2 allocs/op
+BenchmarkOneRoute-4         	22331899	        59.50 ns/op	       5 B/op	       0 allocs/op
+BenchmarkOneRouteJSON-4     	 2938617	       442.6 ns/op	      86 B/op	       7 allocs/op
+BenchmarkOneRouteHTML-4     	  732778	      2224 ns/op	     489 B/op	      29 allocs/op
+BenchmarkOneRouteSet-4      	 2913367	       360.7 ns/op	     358 B/op	       4 allocs/op
+BenchmarkOneRouteString-4   	 6236589	       205.8 ns/op	      65 B/op	       3 allocs/op
 
 ## 📊 Detailed Benchmark Results
 
 ### Core Performance Benchmarks
 ```
-BenchmarkOneRoute-4                 	40746602	        57.83 ns/op	       4 B/op	       0 allocs/op
-BenchmarkRecoveryMiddleware-4       	31436148	        80.80 ns/op	       5 B/op	       0 allocs/op
-BenchmarkLoggerMiddleware-4         	 1000000	      2258 ns/op	     402 B/op	      25 allocs/op
-BenchmarkOneRouteJSON-4             	 5706124	       448.8 ns/op	      79 B/op	       6 allocs/op
-BenchmarkOneRouteHTML-4             	 1283953	      1850 ns/op	     455 B/op	      24 allocs/op
-BenchmarkOneRouteSet-4              	 6435945	       362.1 ns/op	     354 B/op	       4 allocs/op
-BenchmarkOneRouteString-4           	11758795	       196.3 ns/op	      61 B/op	       2 allocs/op
-BenchmarkGinJSONRenderOptimized-4   	13179276	       190.9 ns/op	      29 B/op	       2 allocs/op
+BenchmarkOneRoute-4                 	42862548	        60.26 ns/op	       5 B/op	       0 allocs/op
+BenchmarkRecoveryMiddleware-4       	31106094	        68.99 ns/op	       6 B/op	       0 allocs/op
+BenchmarkLoggerMiddleware-4         	 1000000	      2261 ns/op	     439 B/op	      30 allocs/op
+BenchmarkOneRouteJSON-4             	 4451361	       461.6 ns/op	      88 B/op	       8 allocs/op
+BenchmarkOneRouteHTML-4             	 1249078	      1904 ns/op	     495 B/op	      29 allocs/op
+BenchmarkOneRouteSet-4              	 5880760	       399.8 ns/op	     361 B/op	       5 allocs/op
+BenchmarkOneRouteString-4           	12129885	       202.0 ns/op	      64 B/op	       3 allocs/op
+BenchmarkGinJSONRenderOptimized-4   	12060416	       188.3 ns/op	      32 B/op	       3 allocs/op
 ```
 
 ### All Benchmark Results
 ```
-BenchmarkOneRoute-4                      	19430569	        60.66 ns/op	       5 B/op	       0 allocs/op
-BenchmarkRecoveryMiddleware-4            	18058135	        66.62 ns/op	       5 B/op	       0 allocs/op
-BenchmarkLoggerMiddleware-4              	  506211	      2248 ns/op	     444 B/op	      30 allocs/op
-BenchmarkManyHandlers-4                  	  462403	      2511 ns/op	     437 B/op	      30 allocs/op
-Benchmark5Params-4                       	 8214279	       137.4 ns/op	      12 B/op	       1 allocs/op
-BenchmarkOneRouteJSON-4                  	 2714229	       459.0 ns/op	      88 B/op	       8 allocs/op
-BenchmarkOneRouteHTML-4                  	  660388	      1910 ns/op	     495 B/op	      29 allocs/op
-BenchmarkOneRouteSet-4                   	 3222555	       376.5 ns/op	     360 B/op	       5 allocs/op
-BenchmarkOneRouteString-4                	 5560096	       197.3 ns/op	      64 B/op	       3 allocs/op
-BenchmarkManyRoutesFist-4                	20219005	        59.73 ns/op	       5 B/op	       0 allocs/op
-BenchmarkManyRoutesLast-4                	19045585	        65.64 ns/op	       6 B/op	       0 allocs/op
-Benchmark404-4                           	12747135	        94.82 ns/op	       8 B/op	       1 allocs/op
-Benchmark404Many-4                       	13480430	        98.12 ns/op	       8 B/op	       1 allocs/op
-BenchmarkGetMapFromFormData/Small_Bracket-4         	 2748525	       436.2 ns/op	     364 B/op	       5 allocs/op
-BenchmarkGetMapFromFormData/Small_Names-4           	 2829022	       423.3 ns/op	     363 B/op	       5 allocs/op
-BenchmarkGetMapFromFormData/Medium_Bracket-4        	 1684039	       709.6 ns/op	     389 B/op	       8 allocs/op
-BenchmarkGetMapFromFormData/Medium_Names-4          	 1787799	       673.2 ns/op	     385 B/op	       8 allocs/op
-BenchmarkGetMapFromFormData/Medium_Other-4          	 1937944	       623.1 ns/op	     381 B/op	       7 allocs/op
-BenchmarkGetMapFromFormData/Large_Bracket-4         	   67549	     17390 ns/op	   10611 B/op	     166 allocs/op
-BenchmarkGetMapFromFormData/Large_Names-4           	  130905	     10134 ns/op	    5243 B/op	     105 allocs/op
-BenchmarkGetMapFromFormData/Large_Other-4           	  178161	      6665 ns/op	    2680 B/op	      75 allocs/op
-BenchmarkGetMapFromFormData/WorstCase_Bracket-4     	  611146	      2303 ns/op	     530 B/op	      26 allocs/op
-BenchmarkGetMapFromFormData/ShortKeys_Bracket-4     	 2868622	       426.8 ns/op	     364 B/op	       5 allocs/op
-BenchmarkGetMapFromFormData/Empty_Key-4             	 7197562	       169.4 ns/op	      62 B/op	       2 allocs/op
-BenchmarkFastPong-4                                 	 2402421	       499.0 ns/op	     456 B/op	       8 allocs/op
-BenchmarkRegularJSON-4                              	  796879	      1427 ns/op	     965 B/op	      22 allocs/op
-BenchmarkGithub-4                                   	  471931	      2537 ns/op	    1035 B/op	      40 allocs/op
-BenchmarkParallelGithub-4                           	  687268	      1619 ns/op	    1688 B/op	      26 allocs/op
-BenchmarkParallelGithubDefault-4                    	  767175	      1725 ns/op	    1698 B/op	      27 allocs/op
-BenchmarkGin_GithubAll-4                            	 9425067	       145.9 ns/op	      13 B/op	       1 allocs/op
-BenchmarkGin_GithubAllSequential-4                  	   44722	     27195 ns/op	    2440 B/op	     304 allocs/op
-BenchmarkGin_GithubAllParallel-4                    	16974115	        68.88 ns/op	       3 B/op	       0 allocs/op
-BenchmarkStandardJSON_Marshal-4                     	  588991	      1783 ns/op	     550 B/op	      27 allocs/op
-BenchmarkSonicJSON_Marshal-4                        	 1359951	       824.8 ns/op	     358 B/op	      12 allocs/op
-BenchmarkGinJSONRender-4                            	 1759875	       704.4 ns/op	     173 B/op	      10 allocs/op
-BenchmarkGinFastJSON-4                              	 1718354	       740.2 ns/op	     176 B/op	      11 allocs/op
-BenchmarkGinJSONRenderOptimized-4                   	 6421917	       202.4 ns/op	      34 B/op	       3 allocs/op
-BenchmarkFastLogger-4                               	 1000000	      1375 ns/op	     693 B/op	      21 allocs/op
-BenchmarkStandardLogger-4                           	  529096	      2802 ns/op	     964 B/op	      42 allocs/op
-BenchmarkFastJSON-4                                 	  559753	      1938 ns/op	     846 B/op	      30 allocs/op
-BenchmarkRegularJSONContext-4                       	  547898	      1912 ns/op	     839 B/op	      29 allocs/op
-BenchmarkStringFast-4                               	 2095142	       571.2 ns/op	     509 B/op	       9 allocs/op
-BenchmarkRegularString-4                            	 2385838	       501.1 ns/op	     487 B/op	       7 allocs/op
-BenchmarkPathClean-4                                	  605636	      1761 ns/op	     267 B/op	      36 allocs/op
-BenchmarkPathCleanLong-4                            	     189	   6417504 ns/op	 3750780 B/op	   71356 allocs/op
-BenchmarkSimpleRoute-4                              	 5813427	       200.7 ns/op	      64 B/op	       3 allocs/op
-BenchmarkSimpleRouteFast-4                          	 5580132	       229.7 ns/op	      43 B/op	       4 allocs/op
-BenchmarkPingFast-4                                 	 6967834	       189.5 ns/op	      32 B/op	       3 allocs/op
-BenchmarkWithStandardLogger-4                       	[GIN] 2025/09/24 - 20:47:58 | 200 |       1.192µs |                 | GET      "/ping"
-BenchmarkWithFastLogger-4                           	 4435756	       263.3 ns/op	      38 B/op	       3 allocs/op
-BenchmarkComplexJSONStandard-4                      	  419985	      2412 ns/op	     683 B/op	      39 allocs/op
-BenchmarkComplexJSONFast-4                          	  710649	      2447 ns/op	     687 B/op	      39 allocs/op
-BenchmarkComplexJSONPreCached-4                     	 5581802	       191.3 ns/op	      33 B/op	       3 allocs/op
-BenchmarkMultipleMiddlewareStandard-4               	[GIN] 2025/09/24 - 20:48:05 | 200 |      15.308µs |                 | GET      "/api/endpoint"
-BenchmarkMultipleMiddlewareOptimized-4              	[GIN] 2025/09/24 - 20:48:06 | 200 | 2.955µs |  | GET /api/endpoint
-BenchmarkParseAccept-4                              	 4567012	       280.2 ns/op	     149 B/op	       4 allocs/op
+BenchmarkOneRoute-4                      	20473118	        64.66 ns/op	       3 B/op	       0 allocs/op
+BenchmarkRecoveryMiddleware-4            	14683605	        69.78 ns/op	       4 B/op	       0 allocs/op
+BenchmarkLoggerMiddleware-4              	  565848	      2024 ns/op	     386 B/op	      23 allocs/op
+BenchmarkManyHandlers-4                  	  715873	      2359 ns/op	     396 B/op	      24 allocs/op
+Benchmark5Params-4                       	 7740751	       147.2 ns/op	       9 B/op	       1 allocs/op
+BenchmarkOneRouteJSON-4                  	 2662604	       452.5 ns/op	      74 B/op	       6 allocs/op
+BenchmarkOneRouteHTML-4                  	  552600	      1834 ns/op	     442 B/op	      23 allocs/op
+BenchmarkOneRouteSet-4                   	 3395011	       359.0 ns/op	     352 B/op	       4 allocs/op
+BenchmarkOneRouteString-4                	 5944647	       190.9 ns/op	      58 B/op	       2 allocs/op
+BenchmarkManyRoutesFist-4                	16747728	        61.40 ns/op	       3 B/op	       0 allocs/op
+BenchmarkManyRoutesLast-4                	19386541	        62.19 ns/op	       3 B/op	       0 allocs/op
+Benchmark404-4                           	12575622	        92.27 ns/op	       5 B/op	       0 allocs/op
+Benchmark404Many-4                       	10281890	       105.7 ns/op	       6 B/op	       0 allocs/op
+BenchmarkGetMapFromFormData/Small_Bracket-4         	 2841529	       427.1 ns/op	     356 B/op	       4 allocs/op
+BenchmarkGetMapFromFormData/Small_Names-4           	 2691195	       417.2 ns/op	     355 B/op	       4 allocs/op
+BenchmarkGetMapFromFormData/Medium_Bracket-4        	 1731745	       684.4 ns/op	     371 B/op	       6 allocs/op
+BenchmarkGetMapFromFormData/Medium_Names-4          	 1824499	       660.4 ns/op	     370 B/op	       6 allocs/op
+BenchmarkGetMapFromFormData/Medium_Other-4          	 2013714	       597.0 ns/op	     366 B/op	       5 allocs/op
+BenchmarkGetMapFromFormData/Large_Bracket-4         	   68822	     17400 ns/op	   10270 B/op	     123 allocs/op
+BenchmarkGetMapFromFormData/Large_Names-4           	  125413	      9833 ns/op	    4985 B/op	      73 allocs/op
+BenchmarkGetMapFromFormData/Large_Other-4           	  210904	      6245 ns/op	    2477 B/op	      49 allocs/op
+BenchmarkGetMapFromFormData/WorstCase_Bracket-4     	  483061	      2225 ns/op	     466 B/op	      18 allocs/op
+BenchmarkGetMapFromFormData/ShortKeys_Bracket-4     	 2905225	       412.1 ns/op	     355 B/op	       4 allocs/op
+BenchmarkGetMapFromFormData/Empty_Key-4             	 7582339	       166.1 ns/op	      57 B/op	       2 allocs/op
+BenchmarkFastPong-4                                 	 2460811	       485.4 ns/op	     446 B/op	       6 allocs/op
+BenchmarkRegularJSON-4                              	  771528	      1409 ns/op	     933 B/op	      18 allocs/op
+BenchmarkGithub-4                                   	  461784	      2406 ns/op	     962 B/op	      31 allocs/op
+BenchmarkParallelGithub-4                           	  749682	      1740 ns/op	    1690 B/op	      26 allocs/op
+BenchmarkParallelGithubDefault-4                    	  694546	      1669 ns/op	    1687 B/op	      25 allocs/op
+BenchmarkGin_GithubAll-4                            	 8498114	       129.9 ns/op	       8 B/op	       1 allocs/op
+BenchmarkGin_GithubAllSequential-4                  	   46119	     27377 ns/op	    1677 B/op	     209 allocs/op
+BenchmarkGin_GithubAllParallel-4                    	17198516	        67.42 ns/op	       2 B/op	       0 allocs/op
+BenchmarkStandardJSON_Marshal-4                     	  974874	      1726 ns/op	     496 B/op	      21 allocs/op
+BenchmarkSonicJSON_Marshal-4                        	 1556332	       780.5 ns/op	     335 B/op	       9 allocs/op
+BenchmarkGinJSONRender-4                            	 1903731	       638.4 ns/op	     148 B/op	       7 allocs/op
+BenchmarkGinFastJSON-4                              	 1755955	       694.4 ns/op	     151 B/op	       7 allocs/op
+BenchmarkGinJSONRenderOptimized-4                   	 6867158	       184.5 ns/op	      26 B/op	       2 allocs/op
+BenchmarkFastLogger-4                               	  897343	      1343 ns/op	     659 B/op	      17 allocs/op
+BenchmarkStandardLogger-4                           	  521812	      2690 ns/op	     881 B/op	      32 allocs/op
+BenchmarkFastJSON-4                                 	  580255	      1789 ns/op	     791 B/op	      23 allocs/op
+BenchmarkRegularJSONContext-4                       	  662216	      1790 ns/op	     790 B/op	      23 allocs/op
+BenchmarkStringFast-4                               	 2202705	       541.1 ns/op	     497 B/op	       8 allocs/op
+BenchmarkRegularString-4                            	 2455472	       485.7 ns/op	     478 B/op	       6 allocs/op
+BenchmarkPathClean-4                                	  735104	      1605 ns/op	     209 B/op	      29 allocs/op
+BenchmarkPathCleanLong-4                            	     177	   6259194 ns/op	 3564462 B/op	   48067 allocs/op
+BenchmarkSimpleRoute-4                              	 5640902	       198.7 ns/op	      59 B/op	       2 allocs/op
+BenchmarkSimpleRouteFast-4                          	 5523882	       224.7 ns/op	      37 B/op	       3 allocs/op
+BenchmarkPingFast-4                                 	 7044795	       181.8 ns/op	      26 B/op	       2 allocs/op
+BenchmarkWithStandardLogger-4                       	[GIN] 2025/09/24 - 21:04:14 | 200 |       1.853µs |                 | GET      "/ping"
+BenchmarkWithFastLogger-4                           	 5209870	       258.5 ns/op	      31 B/op	       2 allocs/op
+BenchmarkComplexJSONStandard-4                      	  575305	      2326 ns/op	     612 B/op	      30 allocs/op
+BenchmarkComplexJSONFast-4                          	  447896	      2348 ns/op	     613 B/op	      30 allocs/op
+BenchmarkComplexJSONPreCached-4                     	 7190865	       178.1 ns/op	      26 B/op	       2 allocs/op
+BenchmarkMultipleMiddlewareStandard-4               	[GIN] 2025/09/24 - 21:04:21 | 200 |      20.868µs |                 | GET      "/api/endpoint"
+BenchmarkMultipleMiddlewareOptimized-4              	[GIN] 2025/09/24 - 21:04:22 | 200 | 2.705µs |  | GET /api/endpoint
+BenchmarkParseAccept-4                              	 4675684	       256.8 ns/op	     141 B/op	       3 allocs/op
 ```
 
 ### Performance Summary
 | Benchmark | Performance | Memory | Allocations |
 |-----------|-------------|---------|-------------|
-| BenchmarkOneRoute-4 | 61.52 | 4 | 0 |
-| BenchmarkOneRouteJSON-4 | 539.1 | 78 | 6 |
-| BenchmarkOneRouteHTML-4 | 1833 | 456 | 25 |
-| BenchmarkOneRouteSet-4 | 352.5 | 353 | 4 |
-| BenchmarkOneRouteString-4 | 195.9 | 60 | 2 |
-| BenchmarkGinJSONRenderOptimized-4 | 185.6 | 28 | 2 |
