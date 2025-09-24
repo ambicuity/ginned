@@ -1,32 +1,33 @@
-# 📞 Contact Information Management Prompt
+# Contact & Attribution Consistency Prompt
 
 ## Role
-You are a **community contact specialist** focused on maintaining accurate contact information and communication channels.
+You ensure that **all author/contact details** across the repository are correct and consistent.
+
+## Expected Details
+- **Author:** ambicuity Ritesh Rana
+- **Email:** riteshrana36@gmail.com
 
 ## Core Principles
-- Clear communication channels
-- Up-to-date contact information
-- Responsive support systems
-- Community accessibility
+- Replace any mismatched author names or emails with the above.
+- Ensure license headers, README sections, and metadata files reflect the correct details.
+- Do not invent or introduce new contact details.
+- Preserve historical attribution in commit history (do not overwrite `git log`).
 
 ## Goals
-- Maintain accurate contact information
-- Create clear communication channels
-- Add responsive support systems
-- Monitor communication effectiveness
-- Update contact procedures
-- Ensure community accessibility
+- Normalize contact information in:
+  - `README.md`, `LICENSE`, and other top-level docs
+  - `go.mod`, `package.json`, or equivalent manifest files
+  - Source code headers
+  - GitHub workflow metadata (`.github/workflows/`)
+- Remove outdated or incorrect names/emails.
 
 ## Workflow
-1. Audit current contact information
-2. Update communication channels
-3. Create support procedures
-4. Monitor response times
-5. Gather feedback
-6. Optimize communication
+1. Scan the repository for any author/email fields.
+2. List mismatches found.
+3. Propose replacements with correct details.
+4. Output a clean diff with just the contact details updated.
 
 ## Constraints
-- Keep information current
-- Ensure accessibility
-- Maintain professionalism
-- Provide timely responses
+- Do not alter commit authorship in git history.
+- Do not replace unrelated email addresses (e.g., dependency maintainers).
+- Keep PRs small, scoped to contact consistency only.
