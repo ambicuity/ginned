@@ -1,0 +1,151 @@
+name: Benchmark Tests
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'benchmarks_test.go'
+      - 'benchmark_update.sh'
+      - '.github/workflows/benchmarks.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'benchmarks_test.go'
+      - 'benchmark_update.sh'
+      - '.github/workflows/benchmarks.yml'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.21, 1.22, 1.23, 1.24]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run standard tests
+      run: go test -v ./...
+
+    - name: Run benchmark tests
+      run: |
+        echo "Running core benchmark tests..."
+        go test -bench=BenchmarkOneRoute -benchtime=2s -benchmem
+        go test -bench=BenchmarkRecoveryMiddleware -benchtime=2s -benchmem
+        go test -bench=BenchmarkLoggerMiddleware -benchtime=2s -benchmem
+        go test -bench=BenchmarkOneRouteJSON -benchtime=2s -benchmem
+
+    - name: Run comprehensive benchmarks
+      run: |
+        echo "Running comprehensive benchmark suite..."
+        go test -bench=. -benchmem -benchtime=1s | head -30
+
+    - name: Test benchmark automation script
+      run: |
+        echo "Testing benchmark_update.sh script..."
+        chmod +x benchmark_update.sh
+        ./benchmark_update.sh
+
+    - name: Validate benchmark script output
+      run: |
+        echo "Validating benchmark script generates proper format..."
+        output=$(./benchmark_update.sh)
+        if echo "$output" | grep -q "VM HOST:.*Machine:.*Date:.*Version:.*Go Version:"; then
+          echo "✅ Benchmark script output format is correct"
+        else
+          echo "❌ Benchmark script output format is incorrect"
+          exit 1
+        fi
+
+    - name: Performance regression check
+      run: |
+        echo "Running performance regression checks..."
+        # Run BenchmarkOneRoute and check if it's reasonably fast (< 200ns/op)
+        result=$(go test -bench=BenchmarkOneRoute -benchtime=2s | grep "BenchmarkOneRoute-" | head -1 | awk '{print $3}')
+        if [ ! -z "$result" ]; then
+          # Extract numeric value (remove "ns/op" suffix)
+          ns_per_op=$(echo "$result" | sed 's/ns\/op//')
+          echo "BenchmarkOneRoute performance: ${ns_per_op} ns/op"
+          # Simple numeric comparison without bc (works for integers)
+          ns_int=$(echo "$ns_per_op" | cut -d. -f1)
+          if [ "$ns_int" -lt 200 ] 2>/dev/null; then
+            echo "✅ Performance is within acceptable range"
+          else
+            echo "⚠️  Performance might be degraded: ${ns_per_op} ns/op"
+          fi
+        else
+          echo "❌ Could not extract benchmark results"
+          exit 1
+        fi
+
+  benchmark-report:
+    runs-on: ubuntu-latest
+    needs: benchmark
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Generate benchmark report
+      run: |
+        echo "Generating comprehensive benchmark report..."
+        chmod +x benchmark_update.sh
+        ./benchmark_update.sh > benchmark_report.txt
+        echo "" >> benchmark_report.txt
+        echo "## Full Benchmark Results" >> benchmark_report.txt
+        echo "\`\`\`" >> benchmark_report.txt
+        go test -bench=. -benchmem -benchtime=2s 2>/dev/null | grep "^Benchmark" >> benchmark_report.txt
+        echo "\`\`\`" >> benchmark_report.txt
+
+    - name: Upload benchmark report
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-report
+        path: benchmark_report.txt
+        retention-days: 30
+
+    - name: Comment on PR with benchmark results (if PR)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('benchmark_report.txt', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🚀 Benchmark Results\n\n${report.substring(0, 2000)}${report.length > 2000 ? '\n\n... (truncated, see full report in artifacts)' : ''}`
+          });
