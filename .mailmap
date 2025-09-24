@@ -1,0 +1,12 @@
+# .mailmap - Map commit authors to consistent identity
+# Format: Proper Name <proper@email.com> <commit@email.com>
+# Format: Proper Name <proper@email.com> Commit Name <commit@email.com>
+
+# Map GitHub Copilot commits to main author
+ambicuity Ritesh Rana <riteshrana36@gmail.com> <198982749+Copilot@users.noreply.github.com>
+
+# Map GitHub Actions bot commits to main author  
+ambicuity Ritesh Rana <riteshrana36@gmail.com> <github-actions[bot]@users.noreply.github.com>
+
+# Map any GitHub alias variations to the canonical identity
+ambicuity Ritesh Rana <riteshrana36@gmail.com> <44251619+ambicuity@users.noreply.github.com>
