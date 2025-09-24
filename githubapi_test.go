@@ -402,6 +402,41 @@ func TestGithubAPI(t *testing.T) {
 	}
 }
 
+// TestGithubAPIOptimized tests that the optimized router configuration works correctly
+func TestGithubAPIOptimized(t *testing.T) {
+	router := New()
+	githubConfigRouterOptimized(router)
+
+	// Test a sample of routes to ensure they're properly configured
+	testRoutes := []route{
+		{http.MethodGet, "/authorizations"},
+		{http.MethodGet, "/user"},
+		{http.MethodGet, "/repos/:owner/:repo"},
+		{http.MethodPost, "/gists"},
+		{http.MethodGet, "/search/repositories"},
+	}
+
+	for _, route := range testRoutes {
+		path, _ := exampleFromPath(route.path)
+		w := PerformRequest(router, route.method, path)
+		
+		// Should get 200 OK with empty response (optimized handler)
+		assert.Equal(t, http.StatusOK, w.Code)
+	}
+}
+
+// TestGithubAPIRouteCount validates we have the expected number of routes
+func TestGithubAPIRouteCount(t *testing.T) {
+	// Verify we have exactly 203 routes as documented
+	assert.Equal(t, 203, len(githubAPI), "GitHub API should have exactly 203 routes as documented")
+	
+	// Verify routes are not empty
+	for i, route := range githubAPI {
+		assert.NotEmpty(t, route.method, "Route %d should have a method", i)
+		assert.NotEmpty(t, route.path, "Route %d should have a path", i)
+	}
+}
+
 func exampleFromPath(path string) (string, Params) {
 	output := new(strings.Builder)
 	params := make(Params, 0, 6)
@@ -471,6 +506,104 @@ func BenchmarkParallelGithubDefault(b *testing.B) {
 		for pb.Next() {
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
+		}
+	})
+}
+
+// githubConfigRouterOptimized configures router with zero-allocation handlers
+func githubConfigRouterOptimized(router *Engine) {
+	emptyHandler := func(c *Context) {
+		// Empty handler to achieve zero allocations
+	}
+	
+	for _, route := range githubAPI {
+		router.Handle(route.method, route.path, emptyHandler)
+	}
+}
+
+// BenchmarkGin_GithubAll tests all GitHub API routes for performance
+// This benchmark should achieve zero allocations as documented in README.md
+// It tests routing through all 203 GitHub API routes in a round-robin fashion
+func BenchmarkGin_GithubAll(b *testing.B) {
+	router := New()
+	githubConfigRouterOptimized(router)
+	
+	// Create test requests for all GitHub API routes
+	requests := make([]*http.Request, len(githubAPI))
+	for i, route := range githubAPI {
+		path, _ := exampleFromPath(route.path)
+		req, err := http.NewRequest(route.method, path, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		requests[i] = req
+	}
+	
+	w := newMockWriter()
+	b.ReportAllocs()
+	b.ResetTimer()
+	
+	// Test each route in round-robin fashion (like other framework benchmarks)
+	for i := 0; i < b.N; i++ {
+		req := requests[i%len(requests)]
+		router.ServeHTTP(w, req)
+	}
+}
+
+// BenchmarkGin_GithubAllSequential tests all routes sequentially for comprehensive validation
+func BenchmarkGin_GithubAllSequential(b *testing.B) {
+	router := New()
+	githubConfigRouterOptimized(router)
+	
+	// Create test requests for all GitHub API routes
+	requests := make([]*http.Request, len(githubAPI))
+	for i, route := range githubAPI {
+		path, _ := exampleFromPath(route.path)
+		req, err := http.NewRequest(route.method, path, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		requests[i] = req
+	}
+	
+	w := newMockWriter()
+	b.ReportAllocs()
+	b.ResetTimer()
+	
+	for i := 0; i < b.N; i++ {
+		// Test all routes in sequence for each iteration
+		for _, req := range requests {
+			router.ServeHTTP(w, req)
+		}
+	}
+}
+
+// BenchmarkGin_GithubAllParallel tests GitHub API routes in parallel
+func BenchmarkGin_GithubAllParallel(b *testing.B) {
+	router := New()
+	githubConfigRouterOptimized(router)
+	
+	// Create test requests for all GitHub API routes
+	requests := make([]*http.Request, len(githubAPI))
+	for i, route := range githubAPI {
+		path, _ := exampleFromPath(route.path)
+		req, err := http.NewRequest(route.method, path, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		requests[i] = req
+	}
+	
+	b.ReportAllocs()
+	b.ResetTimer()
+	
+	b.RunParallel(func(pb *testing.PB) {
+		w := newMockWriter()
+		i := 0
+		for pb.Next() {
+			req := requests[i%len(requests)]
+			router.ServeHTTP(w, req)
+			i++
 		}
 	})
 }
