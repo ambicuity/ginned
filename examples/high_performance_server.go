@@ -8,7 +8,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"runtime"
@@ -46,7 +45,6 @@ func main() {
 
 	// Pre-marshal common responses for maximum speed
 	successResponse := []byte(`{"status":"success","message":"Operation completed"}`)
-	errorResponse := []byte(`{"status":"error","message":"Operation failed"}`)
 
 	// Ultra-fast endpoints using pre-marshaled responses
 	apiV1.FastGET("/status", func(c *gin.Context) {
@@ -59,7 +57,7 @@ func main() {
 	})
 
 	// Example with dynamic but cached JSON
-	userCache := gin.NewCommonResponseCache()
+	userCache := NewResponseCache()
 	apiV1.FastGET("/user/:id", func(c *gin.Context) {
 		userID := c.Param("id")
 
@@ -124,8 +122,8 @@ func getUserByID(id string) map[string]interface{} {
 	}
 }
 
-// NewCommonResponseCache creates a simple response cache
-func (engine *gin.Engine) NewCommonResponseCache() *ResponseCache {
+// NewResponseCache creates a simple response cache
+func NewResponseCache() *ResponseCache {
 	return &ResponseCache{
 		cache: make(map[string][]byte),
 	}
@@ -143,7 +141,7 @@ func (rc *ResponseCache) GetCached(key string) []byte {
 
 // SetCached marshals and caches a response
 func (rc *ResponseCache) SetCached(key string, obj interface{}) []byte {
-	marshaled, _ := gin.GetOrSetCommonJSON(key, obj)
+	marshaled := gin.GetOrSetCommonJSON(key, obj)
 	rc.cache[key] = marshaled
 	return marshaled
 }
