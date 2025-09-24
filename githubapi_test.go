@@ -419,7 +419,7 @@ func TestGithubAPIOptimized(t *testing.T) {
 	for _, route := range testRoutes {
 		path, _ := exampleFromPath(route.path)
 		w := PerformRequest(router, route.method, path)
-		
+
 		// Should get 200 OK with empty response (optimized handler)
 		assert.Equal(t, http.StatusOK, w.Code)
 	}
@@ -429,7 +429,7 @@ func TestGithubAPIOptimized(t *testing.T) {
 func TestGithubAPIRouteCount(t *testing.T) {
 	// Verify we have exactly 203 routes as documented
 	assert.Equal(t, 203, len(githubAPI), "GitHub API should have exactly 203 routes as documented")
-	
+
 	// Verify routes are not empty
 	for i, route := range githubAPI {
 		assert.NotEmpty(t, route.method, "Route %d should have a method", i)
@@ -515,7 +515,7 @@ func githubConfigRouterOptimized(router *Engine) {
 	emptyHandler := func(c *Context) {
 		// Empty handler to achieve zero allocations
 	}
-	
+
 	for _, route := range githubAPI {
 		router.Handle(route.method, route.path, emptyHandler)
 	}
@@ -527,7 +527,7 @@ func githubConfigRouterOptimized(router *Engine) {
 func BenchmarkGin_GithubAll(b *testing.B) {
 	router := New()
 	githubConfigRouterOptimized(router)
-	
+
 	// Create test requests for all GitHub API routes
 	requests := make([]*http.Request, len(githubAPI))
 	for i, route := range githubAPI {
@@ -538,11 +538,11 @@ func BenchmarkGin_GithubAll(b *testing.B) {
 		}
 		requests[i] = req
 	}
-	
+
 	w := newMockWriter()
 	b.ReportAllocs()
 	b.ResetTimer()
-	
+
 	// Test each route in round-robin fashion (like other framework benchmarks)
 	for i := 0; i < b.N; i++ {
 		req := requests[i%len(requests)]
@@ -554,7 +554,7 @@ func BenchmarkGin_GithubAll(b *testing.B) {
 func BenchmarkGin_GithubAllSequential(b *testing.B) {
 	router := New()
 	githubConfigRouterOptimized(router)
-	
+
 	// Create test requests for all GitHub API routes
 	requests := make([]*http.Request, len(githubAPI))
 	for i, route := range githubAPI {
@@ -565,11 +565,11 @@ func BenchmarkGin_GithubAllSequential(b *testing.B) {
 		}
 		requests[i] = req
 	}
-	
+
 	w := newMockWriter()
 	b.ReportAllocs()
 	b.ResetTimer()
-	
+
 	for i := 0; i < b.N; i++ {
 		// Test all routes in sequence for each iteration
 		for _, req := range requests {
@@ -582,7 +582,7 @@ func BenchmarkGin_GithubAllSequential(b *testing.B) {
 func BenchmarkGin_GithubAllParallel(b *testing.B) {
 	router := New()
 	githubConfigRouterOptimized(router)
-	
+
 	// Create test requests for all GitHub API routes
 	requests := make([]*http.Request, len(githubAPI))
 	for i, route := range githubAPI {
@@ -593,10 +593,10 @@ func BenchmarkGin_GithubAllParallel(b *testing.B) {
 		}
 		requests[i] = req
 	}
-	
+
 	b.ReportAllocs()
 	b.ResetTimer()
-	
+
 	b.RunParallel(func(pb *testing.PB) {
 		w := newMockWriter()
 		i := 0
