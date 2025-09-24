@@ -1,13 +1,28 @@
 
 # Benchmark System
 
-**VM HOST:** Travis
-**Machine:** Ubuntu 16.04.6 LTS x64
-**Date:** May 04th, 2020
-**Version:** Gin v1.6.3
-**Go Version:** 1.14.2 linux/amd64
-**Source:** [Go HTTP Router Benchmark](https://github.com/gin-gonic/go-http-routing-benchmark)
-**Result:** [See the gist](https://gist.github.com/appleboy/b5f2ecfaf50824ae9c64dcfb9165ae5e) or [Travis result](https://travis-ci.org/github/gin-gonic/go-http-routing-benchmark/jobs/682947061)
+VM HOST: GitHub Actions Machine: Ubuntu 24.04.3 LTS Date: September 24th, 2025 Version: Gin v1.11.0 Go Version: go1.24.7 linux/amd64 Source: Go HTTP Router Benchmark Result: See the benchmark results below
+
+## Current Gin Framework Benchmarks
+
+```sh
+BenchmarkOneRoute-4                      	40322332	        58.77 ns/op	       4 B/op	       0 allocs/op
+BenchmarkRecoveryMiddleware-4            	29503036	        68.97 ns/op	       4 B/op	       0 allocs/op
+BenchmarkLoggerMiddleware-4              	 1000000	      2030 ns/op	     400 B/op	      25 allocs/op
+BenchmarkManyHandlers-4                  	  978696	      2130 ns/op	     410 B/op	      26 allocs/op
+Benchmark5Params-4                       	18750039	       165.3 ns/op	      10 B/op	       1 allocs/op
+BenchmarkOneRouteJSON-4                  	 5474505	       430.3 ns/op	      76 B/op	       6 allocs/op
+BenchmarkOneRouteHTML-4                  	 1260807	      1828 ns/op	     454 B/op	      24 allocs/op
+BenchmarkOneRouteSet-4                   	 6703413	       348.9 ns/op	     353 B/op	       4 allocs/op
+BenchmarkOneRouteString-4                	12446922	       187.0 ns/op	      59 B/op	       2 allocs/op
+BenchmarkManyRoutesFist-4                	38191074	        59.10 ns/op	       4 B/op	       0 allocs/op
+BenchmarkManyRoutesLast-4                	43123233	        64.82 ns/op	       4 B/op	       0 allocs/op
+Benchmark404-4                           	24228944	        91.12 ns/op	       6 B/op	       0 allocs/op
+BenchmarkGinJSONRender-4                 	 3697539	       653.2 ns/op	     154 B/op	       8 allocs/op
+BenchmarkGinJSONRenderOptimized-4        	12307101	       179.2 ns/op	      28 B/op	       2 allocs/op
+BenchmarkSimpleRoute-4                   	13422048	       185.7 ns/op	      59 B/op	       2 allocs/op
+BenchmarkComplexJSONPreCached-4          	12091303	       186.7 ns/op	      28 B/op	       2 allocs/op
+```
 
 ## Static Routes: 157
 
