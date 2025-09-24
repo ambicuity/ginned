@@ -36,10 +36,10 @@ func TestSetupCommonRoutes(t *testing.T) {
 
 func TestNewFastRouteGroup(t *testing.T) {
 	router := New()
-	
+
 	// Create a fast route group
 	api := router.NewFastRouteGroup("/api/v1")
-	
+
 	// Test FastGET
 	api.FastGET("/users", func(c *Context) {
 		c.FastOk()
@@ -99,7 +99,7 @@ func TestFastSplitPath(t *testing.T) {
 
 func TestFastRouteGroupWithMiddleware(t *testing.T) {
 	router := New()
-	
+
 	// Add middleware to the route group
 	api := router.NewFastRouteGroup("/api", func(c *Context) {
 		c.Header("X-API-Version", "v1")

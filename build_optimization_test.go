@@ -12,16 +12,16 @@ import (
 
 func TestGetBuildInfo(t *testing.T) {
 	buildInfo := GetBuildInfo()
-	
+
 	// Verify build info structure
 	assert.NotEmpty(t, buildInfo.Mode)
 	assert.NotEmpty(t, buildInfo.JSONProvider)
 	assert.True(t, buildInfo.OptimizedRoutes)
 	assert.True(t, buildInfo.PoolingEnabled)
-	
+
 	// Mode should be set
 	assert.Contains(t, []string{"debug", "release", "test"}, buildInfo.Mode)
-	
+
 	// JSON provider should be sonic or another valid provider
 	assert.NotEmpty(t, buildInfo.JSONProvider)
 }
@@ -31,7 +31,7 @@ func TestBuildOptimizationConstants(t *testing.T) {
 	assert.NotEmpty(t, OptimalGOMAXPROCS)
 	assert.NotEmpty(t, OptimalBuildFlags)
 	assert.NotEmpty(t, OptimalServerConfig)
-	
+
 	// Test content of constants
 	assert.Contains(t, OptimalGOMAXPROCS, "GOMAXPROCS")
 	assert.Contains(t, OptimalBuildFlags, "-ldflags")

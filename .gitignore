@@ -9,6 +9,7 @@ tmp.out
 *.dll
 *.so
 *.dylib
+high_performance_server
 
 # Test binary
 *.test
