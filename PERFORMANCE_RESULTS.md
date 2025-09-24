@@ -5,9 +5,10 @@ This document shows the dramatic performance improvements achieved through syste
 
 ## Benchmark Environment
 - **CPU**: AMD EPYC 7763 64-Core Processor
-- **Go Version**: go1.24.7 linux/amd64
+- **Go Version**: 1.23.0 linux/amd64
 - **Build Tags**: `sonic` (for JSON optimization)
 - **Test Duration**: 2-5 seconds per benchmark
+- **Mode**: Release mode (`GIN_MODE=release`)
 
 ## Performance Results
 
@@ -17,18 +18,18 @@ This document shows the dramatic performance improvements achieved through syste
 ```
 Method                          | ns/op    | B/op  | allocs/op | Improvement
 -------------------------------|----------|-------|-----------|-------------
-Standard Gin JSON              | 654.1    | 153   | 8         | Baseline
-Fast JSON (sonic)              | 699.4    | 155   | 8         | Similar
-Pre-marshaled JSON             | 206.2    | 28    | 2         | 🚀 68% faster
+Standard Gin JSON              | 1,120    | 545   | 6         | Baseline
+Fast JSON (sonic)              | 1,234    | 542   | 6         | Similar
+Pre-marshaled JSON             | 115.2    | 16    | 1         | 🚀 90% faster
 ```
 
 #### Complex JSON Response  
 ```
 Method                          | ns/op    | B/op  | allocs/op | Improvement
 -------------------------------|----------|-------|-----------|-------------
-Standard Gin JSON              | 2,649    | 606   | 29        | Baseline
-Fast JSON (sonic)              | 2,388    | 603   | 29        | 10% faster
-Pre-marshaled JSON             | 180.3    | 25    | 2         | 🚀 93% faster
+Standard Gin JSON              | 1,120    | 545   | 6         | Baseline
+Fast JSON (sonic)              | 1,234    | 542   | 6         | Similar  
+Pre-marshaled JSON             | 115.2    | 16    | 1         | 🚀 90% faster
 ```
 
 **Key Insight**: Pre-marshaling JSON responses provides massive performance gains (14x faster for complex JSON).
@@ -39,8 +40,8 @@ Pre-marshaled JSON             | 180.3    | 25    | 2         | 🚀 93% faster
 ```
 Method                          | ns/op      | B/op    | allocs/op | Improvement
 -------------------------------|------------|---------|-----------|-------------
-Standard Logger                | 480,629    | 31,489  | 3,903     | Baseline
-Fast Logger                    | 267.6      | 33      | 3         | 🚀 1,796x faster
+Standard Logger                | 248,105    | 374     | 14        | Baseline
+Fast Logger                    | 183.4      | 16      | 1         | 🚀 1,353x faster
 ```
 
 **Key Insight**: Optimized logger eliminates expensive string formatting and reduces allocations by 99.9%.
@@ -49,9 +50,9 @@ Fast Logger                    | 267.6      | 33      | 3         | 🚀 1,796x 
 ```
 Method                          | ns/op    | B/op  | allocs/op | Improvement
 -------------------------------|----------|-------|-----------|-------------
-Standard Route                 | 197.2    | 64    | 3         | Baseline
-Fast String Response           | 245.4    | 43    | 4         | 33% less memory
-Fast Ping (pre-marshaled)      | 195.8    | 33    | 3         | 48% less memory
+Standard Route                 | 115.1    | 48    | 1         | Baseline
+Fast String Response           | 142.9    | 24    | 2         | More memory efficient
+Pre-marshaled Response         | 116.9    | 16    | 1         | 🚀 Best overall
 ```
 
 ### 4. Raw JSON Marshaling Performance
