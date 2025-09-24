@@ -21,15 +21,15 @@ func (engine *Engine) EnableProfiling(profilingPath ...string) {
 		basePath = profilingPath[0]
 	}
 
-	// CPU profiling endpoint
-	engine.GET(basePath+"/", func(c *Context) {
-		http.DefaultServeMux.ServeHTTP(c.Writer, c.Request)
-	})
-
-	// All pprof endpoints
-	engine.GET(basePath+"/*any", func(c *Context) {
-		// Rewrite path for pprof
-		c.Request.URL.Path = "/debug/pprof" + c.Param("any")
+	// All pprof endpoints - use a catch-all route
+	engine.GET(basePath+"/*filepath", func(c *Context) {
+		// Handle the main pprof index page
+		if c.Param("filepath") == "/" || c.Param("filepath") == "" {
+			c.Request.URL.Path = "/debug/pprof/"
+		} else {
+			// Rewrite path for other pprof endpoints
+			c.Request.URL.Path = "/debug/pprof" + c.Param("filepath")
+		}
 		http.DefaultServeMux.ServeHTTP(c.Writer, c.Request)
 	})
 }
