@@ -40,7 +40,7 @@ func TestRuntimeStatsEndpoint(t *testing.T) {
 	w := PerformRequest(router, http.MethodGet, "/stats")
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "application/json; charset=utf-8", w.Header().Get("Content-Type"))
-	
+
 	// Should contain runtime stats fields
 	body := w.Body.String()
 	assert.Contains(t, body, "goroutines")
@@ -59,7 +59,7 @@ func TestRuntimeStatsEndpointCustomPath(t *testing.T) {
 
 func TestGetRuntimeStats(t *testing.T) {
 	stats := GetRuntimeStats()
-	
+
 	// Verify stats structure
 	assert.Greater(t, stats.Goroutines, 0)
 	assert.Greater(t, stats.MemAlloc, uint64(0))
@@ -77,7 +77,7 @@ func TestNewGCOptimizer(t *testing.T) {
 
 func TestGCOptimizerSetGCPercent(t *testing.T) {
 	optimizer := NewGCOptimizer()
-	
+
 	result := optimizer.SetGCPercent(50)
 	assert.Equal(t, 50, result)
 	assert.Equal(t, 50, optimizer.gcPercent)

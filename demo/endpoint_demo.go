@@ -26,9 +26,9 @@ func EndpointTester() {
 
 	// Test all endpoints
 	testEndpoints := []struct {
-		method   string
-		path     string
-		expected int
+		method      string
+		path        string
+		expected    int
 		description string
 	}{
 		{"GET", "/health", 200, "Health check endpoint"},
@@ -59,7 +59,7 @@ func EndpointTester() {
 		}
 	}
 
-	fmt.Printf("\n📊 Results: %d/%d endpoints working correctly (%.1f%% success rate)\n", 
+	fmt.Printf("\n📊 Results: %d/%d endpoints working correctly (%.1f%% success rate)\n",
 		successCount, len(testEndpoints), float64(successCount)/float64(len(testEndpoints))*100)
 
 	if successCount == len(testEndpoints) {
@@ -72,7 +72,7 @@ func EndpointTester() {
 func setupOptimizedRouter() *gin.Engine {
 	// Create router with all optimizations (same as demo)
 	router := gin.New()
-	
+
 	// Buffer to capture logs for testing
 	var logBuffer bytes.Buffer
 	router.Use(gin.FastLoggerWithWriter(&logBuffer))
@@ -150,7 +150,7 @@ func setupOptimizedRouter() *gin.Engine {
 func testEndpoint(router *gin.Engine, method, path string, expectedStatus int, description string) bool {
 	req, _ := http.NewRequest(method, path, nil)
 	w := httptest.NewRecorder()
-	
+
 	router.ServeHTTP(w, req)
 
 	success := w.Code == expectedStatus
@@ -159,7 +159,7 @@ func testEndpoint(router *gin.Engine, method, path string, expectedStatus int, d
 		status = "❌"
 	}
 
-	fmt.Printf("%s %s %s -> %d (expected %d) - %s\n", 
+	fmt.Printf("%s %s %s -> %d (expected %d) - %s\n",
 		status, method, path, w.Code, expectedStatus, description)
 
 	// Show response body for interesting endpoints
@@ -168,7 +168,7 @@ func testEndpoint(router *gin.Engine, method, path string, expectedStatus int, d
 		if len(body) > 100 {
 			body = body[:100] + "..."
 		}
-		
+
 		// Try to pretty print JSON
 		var jsonData interface{}
 		if json.Unmarshal(w.Body.Bytes(), &jsonData) == nil {
@@ -187,10 +187,10 @@ func testEndpoint(router *gin.Engine, method, path string, expectedStatus int, d
 
 func main() {
 	fmt.Println("🚀 Gin Framework Optimization Demonstration")
-	fmt.Println("==========================================\n")
+	fmt.Println("==========================================")
 
 	// Show build info
-	buildInfo := gin.GetBuildInfo() 
+	buildInfo := gin.GetBuildInfo()
 	fmt.Printf("📊 Build Information:\n")
 	fmt.Printf("   Mode: %s\n", buildInfo.Mode)
 	fmt.Printf("   JSON Provider: %s\n", buildInfo.JSONProvider)

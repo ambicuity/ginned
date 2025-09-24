@@ -79,13 +79,13 @@ func TestFastJSONNumber(t *testing.T) {
 func TestGetOrSetCommonJSON(t *testing.T) {
 	// Test caching functionality
 	obj := map[string]string{"test": "value"}
-	
+
 	// First call should marshal and cache
 	result1 := GetOrSetCommonJSON("test-key", obj)
 	assert.NotNil(t, result1)
 	assert.Contains(t, string(result1), "test")
 	assert.Contains(t, string(result1), "value")
-	
+
 	// Second call should return cached result
 	result2 := GetOrSetCommonJSON("test-key", obj)
 	assert.Equal(t, result1, result2)
@@ -93,7 +93,7 @@ func TestGetOrSetCommonJSON(t *testing.T) {
 
 func TestPreMarshaledJSON(t *testing.T) {
 	jsonData := []byte(`{"custom":"response"}`)
-	
+
 	router := New()
 	router.GET("/test", func(c *Context) {
 		c.PreMarshaledJSON(http.StatusCreated, jsonData)

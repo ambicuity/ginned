@@ -35,11 +35,11 @@ func TestFastLoggerSkipsPingAndHealth(t *testing.T) {
 	buffer := new(bytes.Buffer)
 	router := New()
 	router.Use(FastLoggerWithWriter(buffer))
-	
+
 	router.GET("/ping", func(c *Context) {
 		c.String(http.StatusOK, "pong")
 	})
-	
+
 	router.GET("/health", func(c *Context) {
 		c.String(http.StatusOK, "healthy")
 	})
