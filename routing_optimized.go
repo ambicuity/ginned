@@ -52,7 +52,7 @@ func (frg *FastRouteGroup) fastHandle(httpMethod, relativePath string, handler H
 	handlers := make(HandlersChain, len(frg.commonHandlers)+1)
 	copy(handlers, frg.commonHandlers)
 	handlers[len(handlers)-1] = handler
-	
+
 	return frg.RouterGroup.handle(httpMethod, relativePath, handlers)
 }
 
@@ -64,22 +64,22 @@ type CommonRoutes struct {
 // SetupCommonRoutes creates optimized routes for common API patterns
 func (engine *Engine) SetupCommonRoutes() *CommonRoutes {
 	cr := &CommonRoutes{engine: engine}
-	
+
 	// Health check endpoint (no middleware for maximum speed)
 	engine.GET("/health", func(c *Context) {
 		c.PreMarshaledJSON(200, []byte(`{"status":"healthy"}`))
 	})
-	
+
 	// Ping endpoint
 	engine.GET("/ping", func(c *Context) {
 		c.FastPong()
 	})
-	
+
 	// Version endpoint
 	engine.GET("/version", func(c *Context) {
 		c.PreMarshaledJSON(200, []byte(`{"version":"1.0.0","framework":"gin"}`))
 	})
-	
+
 	return cr
 }
 
@@ -93,21 +93,21 @@ var stringPool = sync.Pool{
 // FastSplitPath splits path efficiently using string pool
 func FastSplitPath(path string) []string {
 	if path == "/" {
-		return []string{""} 
+		return []string{""}
 	}
-	
+
 	// Try to use cached result first
 	if cached, ok := routeCache.Load(path); ok {
 		return cached.([]string)
 	}
-	
+
 	parts := stringPool.Get().([]string)
 	defer func() {
 		stringPool.Put(parts[:0])
 	}()
-	
+
 	parts = strings.Split(path, "/")
-	
+
 	// Cache common paths
 	if len(parts) <= 4 { // Only cache simple paths
 		result := make([]string, len(parts))
@@ -115,7 +115,7 @@ func FastSplitPath(path string) []string {
 		routeCache.Store(path, result)
 		return result
 	}
-	
+
 	// Return copy for complex paths
 	result := make([]string, len(parts))
 	copy(result, parts)

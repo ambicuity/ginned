@@ -20,12 +20,12 @@ func (engine *Engine) EnableProfiling(profilingPath ...string) {
 	if len(profilingPath) > 0 {
 		basePath = profilingPath[0]
 	}
-	
+
 	// CPU profiling endpoint
 	engine.GET(basePath+"/", func(c *Context) {
 		http.DefaultServeMux.ServeHTTP(c.Writer, c.Request)
 	})
-	
+
 	// All pprof endpoints
 	engine.GET(basePath+"/*any", func(c *Context) {
 		// Rewrite path for pprof
@@ -48,7 +48,7 @@ type RuntimeStats struct {
 func GetRuntimeStats() RuntimeStats {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	
+
 	return RuntimeStats{
 		Goroutines:   runtime.NumGoroutine(),
 		MemAlloc:     m.Alloc,
@@ -65,7 +65,7 @@ func (engine *Engine) RuntimeStatsEndpoint(path ...string) {
 	if len(path) > 0 {
 		endpoint = path[0]
 	}
-	
+
 	engine.GET(endpoint, func(c *Context) {
 		stats := GetRuntimeStats()
 		c.JSON(200, stats)
@@ -84,7 +84,7 @@ func NewGCOptimizer() *GCOptimizer {
 	}
 }
 
-// SetGCPercent adjusts garbage collection target percentage  
+// SetGCPercent adjusts garbage collection target percentage
 // Lower values = more frequent GC, less memory usage
 // Higher values = less frequent GC, more memory usage
 func (gco *GCOptimizer) SetGCPercent(percent int) int {
@@ -99,7 +99,7 @@ func (gco *GCOptimizer) OptimizeForLatency() {
 	gco.SetGCPercent(50) // More frequent GC for lower pause times
 }
 
-// OptimizeForThroughput sets GC for high-throughput applications  
+// OptimizeForThroughput sets GC for high-throughput applications
 func (gco *GCOptimizer) OptimizeForThroughput() {
 	gco.SetGCPercent(200) // Less frequent GC for higher throughput
 }

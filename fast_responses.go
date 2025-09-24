@@ -7,14 +7,14 @@ package gin
 import (
 	"strconv"
 	"sync"
-	
+
 	"github.com/gin-gonic/gin/codec/json"
 )
 
 // Common JSON responses that can be pre-marshaled
 var (
 	commonJSONResponses = sync.Map{}
-	
+
 	// Pre-marshaled common responses
 	JSONSuccess = []byte(`{"status":"success"}`)
 	JSONError   = []byte(`{"status":"error"}`)
@@ -27,13 +27,13 @@ func GetOrSetCommonJSON(key string, obj interface{}) []byte {
 	if cached, ok := commonJSONResponses.Load(key); ok {
 		return cached.([]byte)
 	}
-	
+
 	// Marshal and cache the response
 	marshaled, err := json.API.Marshal(obj)
 	if err != nil {
 		return nil
 	}
-	
+
 	commonJSONResponses.Store(key, marshaled)
 	return marshaled
 }
@@ -69,10 +69,10 @@ var bufferPool = sync.Pool{
 func (c *Context) FastJSONNumber(code int, number int64) {
 	buf := bufferPool.Get().([]byte)
 	defer bufferPool.Put(buf[:0])
-	
+
 	buf = append(buf, `{"value":`...)
 	buf = strconv.AppendInt(buf, number, 10)
 	buf = append(buf, '}')
-	
+
 	c.PreMarshaledJSON(code, buf)
 }
