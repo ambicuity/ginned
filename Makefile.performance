@@ -1,0 +1,58 @@
+# High-Performance Gin Build Configuration
+# Copyright 2025 Gin Core Team. All rights reserved.
+
+# Go compiler and flags
+GO = go
+GOOS = linux
+GOARCH = amd64
+
+# Performance build flags
+PERFORMANCE_LDFLAGS = -ldflags="-s -w -X main.version=$(VERSION)"
+PERFORMANCE_TAGS = sonic
+PERFORMANCE_GCFLAGS = -gcflags="-l=4 -B -C"
+
+# Build optimized binary
+build-performance:
+	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) \
+	$(GO) build $(PERFORMANCE_LDFLAGS) \
+	-tags="$(PERFORMANCE_TAGS)" \
+	$(PERFORMANCE_GCFLAGS) \
+	-o gin-server-optimized \
+	./...
+
+# Run performance benchmarks
+benchmark-all:
+	$(GO) test -bench=. -benchmem -benchtime=5s -tags="$(PERFORMANCE_TAGS)" \
+	-cpuprofile=cpu.prof -memprofile=mem.prof ./...
+
+# Quick performance benchmark
+benchmark-quick:
+	$(GO) test -bench="BenchmarkSimpleRoute|BenchmarkComplexJSONPreCached|BenchmarkWithFastLogger" \
+	-benchmem -benchtime=2s -tags="$(PERFORMANCE_TAGS)"
+
+# Profile CPU usage
+profile-cpu:
+	$(GO) test -bench=BenchmarkComplexJSONPreCached -benchtime=10s \
+	-cpuprofile=cpu.prof -tags="$(PERFORMANCE_TAGS)"
+	$(GO) tool pprof cpu.prof
+
+# Profile memory usage  
+profile-memory:
+	$(GO) test -bench=BenchmarkComplexJSONPreCached -benchtime=10s \
+	-memprofile=mem.prof -tags="$(PERFORMANCE_TAGS)"
+	$(GO) tool pprof mem.prof
+
+# Run benchmarks with different JSON providers
+benchmark-json-comparison:
+	@echo "Standard JSON:"
+	$(GO) test -bench=BenchmarkComplexJSONStandard -benchmem -benchtime=3s
+	@echo "\nSonic JSON:"
+	$(GO) test -bench=BenchmarkComplexJSONFast -benchmem -benchtime=3s -tags="sonic"
+	@echo "\nPre-cached JSON:"
+	$(GO) test -bench=BenchmarkComplexJSONPreCached -benchmem -benchtime=3s
+
+# Clean generated files
+clean:
+	rm -f gin-server-optimized cpu.prof mem.prof
+
+.PHONY: build-performance benchmark-all benchmark-quick profile-cpu profile-memory benchmark-json-comparison clean
