@@ -21,6 +21,11 @@ on:
       - '.github/workflows/benchmarks.yml'
   workflow_dispatch: # Allow manual triggering
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   benchmark:
     runs-on: ubuntu-latest
@@ -108,6 +113,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: benchmark
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') || github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     
     steps:
     - uses: actions/checkout@v4
@@ -154,31 +163,88 @@ jobs:
         path: benchmark_report.txt
         retention-days: 30
 
+    - name: Create benchmark summary for easy viewing
+      run: |
+        echo "# 🚀 Gin Framework Benchmark Summary" > benchmark_summary.md
+        echo "" >> benchmark_summary.md
+        echo "**Generated:** $(date)" >> benchmark_summary.md
+        echo "**System:** $(uname -a)" >> benchmark_summary.md
+        echo "**Go Version:** $(go version)" >> benchmark_summary.md
+        echo "" >> benchmark_summary.md
+        echo "## 📈 Key Performance Metrics" >> benchmark_summary.md
+        echo "" >> benchmark_summary.md
+        echo "| Benchmark | Performance | Memory | Allocations |" >> benchmark_summary.md
+        echo "|-----------|-------------|---------|-------------|" >> benchmark_summary.md
+        go test -bench="BenchmarkOneRoute|BenchmarkOneRouteJSON|BenchmarkGinJSONRenderOptimized" -benchmem -benchtime=1s 2>/dev/null | grep "^Benchmark" | head -6 | awk '{print "| " $1 " | " $3 " | " $5 " | " $7 " |"}' >> benchmark_summary.md
+        echo "" >> benchmark_summary.md
+        echo "## 📋 How to View Full Results" >> benchmark_summary.md
+        echo "" >> benchmark_summary.md
+        echo "1. Go to the [Actions tab](../../actions)" >> benchmark_summary.md
+        echo "2. Click on this workflow run" >> benchmark_summary.md
+        echo "3. Download the 'benchmark-report' artifact" >> benchmark_summary.md
+        echo "4. Extract and view \`benchmark_report.txt\`" >> benchmark_summary.md
+
+    - name: Upload benchmark summary  
+      uses: actions/upload-artifact@v4
+      with:
+        name: benchmark-summary
+        path: benchmark_summary.md
+        retention-days: 30
+
     - name: Comment on PR with benchmark results (if PR)
       if: github.event_name == 'pull_request'
       uses: actions/github-script@v7
+      continue-on-error: true
       with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const fs = require('fs');
-          const report = fs.readFileSync('benchmark_report.txt', 'utf8');
-          
-          // Create a more concise summary for PR comments
-          const lines = report.split('\n');
-          const summaryStart = lines.findIndex(line => line.includes('Performance Summary'));
-          let summary = '';
-          
-          if (summaryStart !== -1) {
-            // Get the table section
-            const tableLines = lines.slice(summaryStart, summaryStart + 10).join('\n');
-            summary = `## 🚀 Benchmark Results Summary\n\n${lines[4]}\n\n${tableLines}\n\n📋 **Full report available in [workflow artifacts](${context.payload.pull_request.html_url}/checks)**`;
-          } else {
-            // Fallback to truncated version
-            summary = `## 🚀 Benchmark Results\n\n${report.substring(0, 1500)}${report.length > 1500 ? '\n\n... (truncated, see full report in artifacts)' : ''}`;
+          try {
+            const fs = require('fs');
+            const report = fs.readFileSync('benchmark_report.txt', 'utf8');
+            
+            // Create a more concise summary for PR comments
+            const lines = report.split('\n');
+            const summaryStart = lines.findIndex(line => line.includes('Performance Summary'));
+            let summary = '';
+            
+            if (summaryStart !== -1) {
+              // Get the table section
+              const tableLines = lines.slice(summaryStart, summaryStart + 10).join('\n');
+              summary = `## 🚀 Benchmark Results Summary\n\n${lines[4]}\n\n${tableLines}\n\n📋 **Full report available in [workflow artifacts](${context.payload.pull_request.html_url}/checks)**`;
+            } else {
+              // Fallback to truncated version
+              summary = `## 🚀 Benchmark Results\n\n${report.substring(0, 1500)}${report.length > 1500 ? '\n\n... (truncated, see full report in artifacts)' : ''}`;
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+            
+            console.log('✅ Successfully posted benchmark results to PR');
+          } catch (error) {
+            console.log('⚠️ Failed to post PR comment:', error.message);
+            console.log('📋 Benchmark results are still available in workflow artifacts');
           }
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: summary
-          });
+
+    - name: Output benchmark summary (fallback)
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "## 🚀 Benchmark Results Summary"
+        echo "=================================="
+        echo ""
+        if [ -f benchmark_report.txt ]; then
+          echo "📊 System Information:"
+          head -10 benchmark_report.txt | tail -5
+          echo ""
+          echo "📈 Performance Summary:"
+          echo "| Benchmark | Performance | Memory | Allocations |"
+          echo "|-----------|-------------|---------|-------------|"
+          go test -bench="BenchmarkOneRoute|BenchmarkOneRouteJSON|BenchmarkGinJSONRenderOptimized" -benchmem -benchtime=1s 2>/dev/null | grep "^Benchmark" | head -6 | awk '{print "| " $1 " | " $3 " | " $5 " | " $7 " |"}'
+          echo ""
+          echo "📋 Full report available in workflow artifacts"
+        else
+          echo "❌ Benchmark report not found"
+        fi
