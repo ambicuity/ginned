@@ -14,21 +14,21 @@ test:
 	for d in $(TESTFOLDER); do \
 		tmpout="tmp_$$$$_$(shell date +%s%N).out"; \
 		profileout="profile_$$$$_$(shell date +%s%N).out"; \
-		$(GO) test $(TESTTAGS) -v -covermode=count -coverprofile=$$profileout $$d > $$tmpout; \
+		$(GO) test $(TESTTAGS) -v -covermode=count -coverprofile=$$profileout $$d > $$tmpout 2>&1; \
 		cat $$tmpout; \
 		if grep -q "^--- FAIL" $$tmpout; then \
-			rm $$tmpout; \
+			rm -f $$tmpout $$profileout; \
 			exit 1; \
 		elif grep -q "build failed" $$tmpout; then \
-			rm $$tmpout; \
+			rm -f $$tmpout $$profileout; \
 			exit 1; \
 		elif grep -q "setup failed" $$tmpout; then \
-			rm $$tmpout; \
+			rm -f $$tmpout $$profileout; \
 			exit 1; \
 		fi; \
 		if [ -f $$profileout ]; then \
 			cat $$profileout | grep -v "mode:" >> coverage.out; \
-			rm $$profileout; \
+			rm -f $$profileout; \
 		fi; \
 		rm -f $$tmpout; \
 	done
