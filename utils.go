@@ -6,12 +6,14 @@ package gin
 
 import (
 	"encoding/xml"
+	"fmt"
 	"net/http"
 	"os"
 	"path"
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 	"unicode"
 )
 
@@ -161,4 +163,9 @@ func isASCII(s string) bool {
 		}
 	}
 	return true
+}
+
+// generateETag creates a simple ETag from file metadata for caching optimization
+func generateETag(modTime time.Time, size int64) string {
+	return fmt.Sprintf(`"%x-%x"`, modTime.Unix(), size)
 }
