@@ -508,11 +508,11 @@ func TestRouteFastStaticFile(t *testing.T) {
 	router.FastStaticFile("/fast_result", f.Name())
 
 	w := PerformRequest(router, http.MethodGet, "/fast_result")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Gin Fast Static Framework", w.Body.String())
 	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -538,17 +538,17 @@ func TestRouteFastStaticFileFS(t *testing.T) {
 	f.Close()
 
 	dir, filename := filepath.Split(f.Name())
-	
+
 	// SETUP gin
 	router := New()
 	router.FastStaticFileFS("/fast_result_fs", filename, Dir(dir, false))
 
 	w := PerformRequest(router, http.MethodGet, "/fast_result_fs")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Gin Fast Static FS Framework", w.Body.String())
 	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -574,11 +574,11 @@ func TestRouteFastStatic(t *testing.T) {
 	router.FastStatic("/fast_static", dir)
 
 	w := PerformRequest(router, http.MethodGet, "/fast_static/"+filename)
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Gin Fast Static Directory", w.Body.String())
 	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -648,10 +648,10 @@ func TestRouteUltraFastStaticFile(t *testing.T) {
 	router.UltraFastStaticFile("/ultra_file", f.Name())
 
 	w := PerformRequest(router, http.MethodGet, "/ultra_file")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Ultra Fast Static Content", w.Body.String())
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -675,10 +675,10 @@ func TestRouteSuperFastStaticFile(t *testing.T) {
 	router.SuperFastStaticFile("/super_file", f.Name())
 
 	w := PerformRequest(router, http.MethodGet, "/super_file")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Super Fast Static Content", w.Body.String())
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -734,10 +734,10 @@ func TestRouteLightningFastStaticFile(t *testing.T) {
 	router.LightningFastStaticFile("/lightning_file", f.Name())
 
 	w := PerformRequest(router, http.MethodGet, "/lightning_file")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Lightning Fast Static Content", w.Body.String())
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
@@ -793,10 +793,10 @@ func TestRoutePlasmaFastStaticFile(t *testing.T) {
 	router.PlasmaFastStaticFile("/plasma_file", f.Name())
 
 	w := PerformRequest(router, http.MethodGet, "/plasma_file")
-	
+
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "Plasma Fast Static Content", w.Body.String())
-	
+
 	// Check caching headers
 	assert.NotEmpty(t, w.Header().Get("ETag"))
 	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))

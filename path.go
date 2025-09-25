@@ -5,6 +5,8 @@
 
 package gin
 
+const pathSeparator = "/"
+
 // cleanPath is the URL version of path.Clean, it returns a canonical URL path
 // for p, eliminating . and .. elements.
 //
@@ -22,7 +24,7 @@ func cleanPath(p string) string {
 	const stackBufSize = 128
 	// Turn empty string into "/"
 	if p == "" {
-		return "/"
+		return pathSeparator
 	}
 
 	// Reasonably sized buffer on stack to avoid allocations in the common case.
@@ -39,7 +41,7 @@ func cleanPath(p string) string {
 	r := 1
 	w := 1
 
-	if p[0] != '/' {
+	if p[0] != pathSeparator[0] {
 		r = 0
 
 		if n+1 > stackBufSize {
@@ -47,10 +49,10 @@ func cleanPath(p string) string {
 		} else {
 			buf = buf[:n+1]
 		}
-		buf[0] = '/'
+		buf[0] = pathSeparator[0]
 	}
 
-	trailing := n > 1 && p[n-1] == '/'
+	trailing := n > 1 && p[n-1] == pathSeparator[0]
 
 	// A bit more clunky without a 'lazybuf' like the path package, but the loop
 	// gets completely inlined (bufApp calls).
@@ -59,7 +61,7 @@ func cleanPath(p string) string {
 
 	for r < n {
 		switch {
-		case p[r] == '/':
+		case p[r] == pathSeparator[0]:
 			// empty path element, trailing slash is added after the end
 			r++
 
@@ -67,11 +69,11 @@ func cleanPath(p string) string {
 			trailing = true
 			r++
 
-		case p[r] == '.' && p[r+1] == '/':
+		case p[r] == '.' && p[r+1] == pathSeparator[0]:
 			// . element
 			r += 2
 
-		case p[r] == '.' && p[r+1] == '.' && (r+2 == n || p[r+2] == '/'):
+		case p[r] == '.' && p[r+1] == '.' && (r+2 == n || p[r+2] == pathSeparator[0]):
 			// .. element: remove to last /
 			r += 3
 
@@ -80,11 +82,11 @@ func cleanPath(p string) string {
 				w--
 
 				if len(buf) == 0 {
-					for w > 1 && p[w] != '/' {
+					for w > 1 && p[w] != pathSeparator[0] {
 						w--
 					}
 				} else {
-					for w > 1 && buf[w] != '/' {
+					for w > 1 && buf[w] != pathSeparator[0] {
 						w--
 					}
 				}
@@ -94,12 +96,12 @@ func cleanPath(p string) string {
 			// Real path element.
 			// Add slash if needed
 			if w > 1 {
-				bufApp(&buf, p, w, '/')
+				bufApp(&buf, p, w, pathSeparator[0])
 				w++
 			}
 
 			// Copy element
-			for r < n && p[r] != '/' {
+			for r < n && p[r] != pathSeparator[0] {
 				bufApp(&buf, p, w, p[r])
 				w++
 				r++
@@ -109,7 +111,7 @@ func cleanPath(p string) string {
 
 	// Re-append trailing slash
 	if trailing && w > 1 {
-		bufApp(&buf, p, w, '/')
+		bufApp(&buf, p, w, pathSeparator[0])
 		w++
 	}
 

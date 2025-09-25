@@ -22,9 +22,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-contrib/sse"
 	"github.com/ambicuity/ginned/binding"
 	"github.com/ambicuity/ginned/render"
+	"github.com/gin-contrib/sse"
 )
 
 // Content-Type MIME of the most common data formats.
@@ -1227,18 +1227,18 @@ func (c *Context) FastFile(filepath string) {
 	if stat, err := os.Stat(filepath); err == nil {
 		etag := generateETag(stat.ModTime(), stat.Size())
 		lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
-		
+
 		// Set caching headers
 		c.Header("ETag", etag)
 		c.Header("Last-Modified", lastMod)
 		c.Header("Cache-Control", "public, max-age=3600")
-		
+
 		// Check if-none-match
 		if c.GetHeader("If-None-Match") == etag {
 			c.Status(http.StatusNotModified)
 			return
 		}
-		
+
 		// Check if-modified-since
 		if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
 			if t, err := time.Parse(http.TimeFormat, ifModSince); err == nil {
@@ -1249,7 +1249,7 @@ func (c *Context) FastFile(filepath string) {
 			}
 		}
 	}
-	
+
 	http.ServeFile(c.Writer, c.Request, filepath)
 }
 
@@ -1266,19 +1266,19 @@ func (c *Context) FastFileFromFS(filepath string, fs http.FileSystem) {
 		if stat, err := f.Stat(); err == nil {
 			etag := generateETag(stat.ModTime(), stat.Size())
 			lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
-			
+
 			// Set caching headers
 			c.Header("ETag", etag)
 			c.Header("Last-Modified", lastMod)
 			c.Header("Cache-Control", "public, max-age=3600")
-			
+
 			// Check if-none-match
 			if c.GetHeader("If-None-Match") == etag {
 				c.Status(http.StatusNotModified)
 				f.Close()
 				return
 			}
-			
+
 			// Check if-modified-since
 			if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
 				if t, err := time.Parse(http.TimeFormat, ifModSince); err == nil {
