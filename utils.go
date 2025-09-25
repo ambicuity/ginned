@@ -77,12 +77,14 @@ func (h H) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return e.EncodeToken(xml.EndElement{Name: start.Name})
 }
 
-func assert1(guard bool, text string) {
-	if !guard {
-		panic(text)
+// assert1 panics with the given message if the condition is false.
+func assert1(condition bool, message string) {
+	if !condition {
+		panic(message)
 	}
 }
 
+// filterFlags removes flags from content by finding the first space or semicolon.
 func filterFlags(content string) string {
 	for i, char := range content {
 		if char == ' ' || char == ';' {
@@ -99,10 +101,14 @@ func chooseData(custom, wildcard any) any {
 	if wildcard != nil {
 		return wildcard
 	}
-	panic("negotiation config is invalid")
+	panic("chooseData: both custom and wildcard data are nil - negotiation config is invalid")
 }
 
 func parseAccept(acceptHeader string) []string {
+	if acceptHeader == "" {
+		return nil
+	}
+	
 	parts := strings.Split(acceptHeader, ",")
 	out := make([]string, 0, len(parts))
 	for _, part := range parts {
@@ -118,7 +124,7 @@ func parseAccept(acceptHeader string) []string {
 
 func lastChar(str string) uint8 {
 	if str == "" {
-		panic("The length of the string can't be 0")
+		panic("lastChar: string cannot be empty")
 	}
 	return str[len(str)-1]
 }
@@ -127,13 +133,15 @@ func nameOfFunction(f any) string {
 	return runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 }
 
+// joinPaths combines an absolute path with a relative path.
 func joinPaths(absolutePath, relativePath string) string {
 	if relativePath == "" {
 		return absolutePath
 	}
 
 	finalPath := path.Join(absolutePath, relativePath)
-	if lastChar(relativePath) == '/' && lastChar(finalPath) != '/' {
+	if len(relativePath) > 0 && relativePath[len(relativePath)-1] == '/' && 
+	   len(finalPath) > 0 && finalPath[len(finalPath)-1] != '/' {
 		return finalPath + "/"
 	}
 	return finalPath
@@ -155,7 +163,8 @@ func resolveAddress(addr []string) string {
 	}
 }
 
-// https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
+// isASCII checks if a string contains only ASCII characters.
+// Reference: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
 func isASCII(s string) bool {
 	for i := 0; i < len(s); i++ {
 		if s[i] > unicode.MaxASCII {
