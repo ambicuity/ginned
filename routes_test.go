@@ -776,6 +776,33 @@ func TestRouteLightningFastStaticFileCaching(t *testing.T) {
 	assert.Empty(t, w2.Body.String())
 }
 
+func TestRoutePlasmaFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Plasma Fast Static Content")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.PlasmaFastStaticFile("/plasma_file", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/plasma_file")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Plasma Fast Static Content", w.Body.String())
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+	assert.NotEmpty(t, w.Header().Get("Content-Type"))
+}
+
 func TestRouteNotAllowedEnabled(t *testing.T) {
 	router := New()
 	router.HandleMethodNotAllowed = true

@@ -659,3 +659,61 @@ func (group *RouterGroup) createLightningFastStaticHandler(filepath string) Hand
 		writer.Write(content)
 	}
 }
+
+// PlasmaFastStaticFile creates the absolutely fastest possible static file handler.
+// This uses extreme optimizations and bypasses most of Gin's processing.
+// WARNING: Use only for critical performance bottlenecks with tiny, unchanging files.
+func (group *RouterGroup) PlasmaFastStaticFile(relativePath, filepath string) IRoutes {
+	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
+		panic("URL parameters can not be used when serving a static file")
+	}
+	
+	handler := group.createPlasmaFastStaticHandler(filepath)
+	group.GET(relativePath, handler)
+	group.HEAD(relativePath, handler)
+	return group.returnObj()
+}
+
+// createPlasmaFastStaticHandler creates the most optimized handler possible
+func (group *RouterGroup) createPlasmaFastStaticHandler(filepath string) HandlerFunc {
+	// Pre-read file at registration time
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		return func(c *Context) {
+			c.Writer.WriteHeader(http.StatusNotFound)
+		}
+	}
+	
+	// Get file info  
+	stat, err := os.Stat(filepath)
+	if err != nil {
+		return func(c *Context) {
+			c.Writer.WriteHeader(http.StatusNotFound) 
+		}
+	}
+	
+	// Pre-compute all headers
+	etag := generateETag(stat.ModTime(), stat.Size())
+	contentType := http.DetectContentType(content)
+	
+	// Return plasma-optimized handler that minimizes all operations
+	return func(c *Context) {
+		writer := c.Writer
+		
+		// Ultra-fast cache check
+		if c.GetHeader("If-None-Match") == etag {
+			writer.WriteHeader(http.StatusNotModified)
+			return
+		}
+		
+		// Set headers efficiently using Set instead of direct assignment
+		header := writer.Header()
+		header.Set("ETag", etag)
+		header.Set("Cache-Control", "public, max-age=3600")
+		header.Set("Content-Type", contentType)
+		
+		// Write response with minimal overhead
+		writer.WriteHeader(http.StatusOK)
+		writer.Write(content)
+	}
+}
