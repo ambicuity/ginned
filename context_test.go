@@ -245,12 +245,19 @@ func TestSaveUploadedFileWithPermission(t *testing.T) {
 	f, err := c.FormFile("file")
 	require.NoError(t, err)
 	assert.Equal(t, "permission_test", f.Filename)
-	var mode fs.FileMode = 0o755
-	require.NoError(t, c.SaveUploadedFile(f, "permission_test", mode))
+	
+	// Create a temporary directory with unique name to avoid conflicts in parallel tests
+	tempDir, err := os.MkdirTemp("", "permission_test_dir_*")
+	require.NoError(t, err)
 	t.Cleanup(func() {
-		assert.NoError(t, os.Remove("permission_test"))
+		os.RemoveAll(tempDir)
 	})
-	info, err := os.Stat(filepath.Dir("permission_test"))
+	tempPath := filepath.Join(tempDir, "subdir", "permission_test")
+	
+	var mode fs.FileMode = 0o755
+	require.NoError(t, c.SaveUploadedFile(f, tempPath, mode))
+	
+	info, err := os.Stat(filepath.Dir(tempPath))
 	require.NoError(t, err)
 	assert.Equal(t, info.Mode().Perm(), mode)
 }
@@ -270,7 +277,15 @@ func TestSaveUploadedFileWithPermissionFailed(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "permission_test", f.Filename)
 	var mode fs.FileMode = 0o644
-	require.Error(t, c.SaveUploadedFile(f, "test/permission_test", mode))
+	
+	// Use a temporary directory with unique name to avoid conflicts in parallel tests
+	tempDir, err := os.MkdirTemp("", "test_dir_*")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		os.RemoveAll(tempDir)
+	})
+	
+	require.Error(t, c.SaveUploadedFile(f, filepath.Join(tempDir, "permission_test"), mode))
 }
 
 func TestContextReset(t *testing.T) {
