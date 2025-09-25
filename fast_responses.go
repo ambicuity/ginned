@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/gin-gonic/gin/codec/json"
+	"github.com/ambicuity/ginned/codec/json"
 )
 
 // Common JSON responses that can be pre-marshaled

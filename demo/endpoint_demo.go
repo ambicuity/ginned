@@ -12,7 +12,7 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/ambicuity/ginned"
 )
 
 // EndpointTester demonstrates all optimization features with test requests

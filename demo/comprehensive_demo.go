@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/ambicuity/ginned"
 )
 
 // ComprehensiveDemo demonstrates all the optimized features of the Ginned framework

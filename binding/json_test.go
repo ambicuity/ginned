@@ -11,8 +11,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/gin-gonic/gin/codec/json"
-	"github.com/gin-gonic/gin/render"
+	"github.com/ambicuity/ginned/codec/json"
+	"github.com/ambicuity/ginned/render"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/modern-go/reflect2"
 	"github.com/stretchr/testify/assert"
