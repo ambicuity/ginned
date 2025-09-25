@@ -490,6 +490,319 @@ func TestRouterMiddlewareAndStatic(t *testing.T) {
 	assert.Equal(t, "Gin Framework", w.Header().Get("x-GIN"))
 }
 
+// TestHandleFastStaticFile - ensure the fast static file handles properly with caching
+func TestRouteFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Gin Fast Static Framework")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.FastStaticFile("/fast_result", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/fast_result")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Gin Fast Static Framework", w.Body.String())
+	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+
+	// Test HEAD request
+	w2 := PerformRequest(router, http.MethodHead, "/fast_result")
+	assert.Equal(t, http.StatusOK, w2.Code)
+	assert.Equal(t, w.Header().Get("ETag"), w2.Header().Get("ETag"))
+	assert.Equal(t, w.Header().Get("Last-Modified"), w2.Header().Get("Last-Modified"))
+}
+
+func TestRouteFastStaticFileFS(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Gin Fast Static FS Framework")
+	require.NoError(t, err)
+	f.Close()
+
+	dir, filename := filepath.Split(f.Name())
+	
+	// SETUP gin
+	router := New()
+	router.FastStaticFileFS("/fast_result_fs", filename, Dir(dir, false))
+
+	w := PerformRequest(router, http.MethodGet, "/fast_result_fs")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Gin Fast Static FS Framework", w.Body.String())
+	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+}
+
+func TestRouteFastStatic(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Gin Fast Static Directory")
+	require.NoError(t, err)
+	f.Close()
+
+	dir, filename := filepath.Split(f.Name())
+
+	// SETUP gin
+	router := New()
+	router.FastStatic("/fast_static", dir)
+
+	w := PerformRequest(router, http.MethodGet, "/fast_static/"+filename)
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Gin Fast Static Directory", w.Body.String())
+	assert.Equal(t, "text/plain; charset=utf-8", w.Header().Get("Content-Type"))
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+
+	// Test HEAD request
+	w2 := PerformRequest(router, http.MethodHead, "/fast_static/"+filename)
+	assert.Equal(t, http.StatusOK, w2.Code)
+	assert.Equal(t, w.Header().Get("ETag"), w2.Header().Get("ETag"))
+}
+
+func TestRouteFastStaticCaching(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Test ETag Caching")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.FastStaticFile("/cached_file", f.Name())
+
+	// First request to get ETag
+	w1 := PerformRequest(router, http.MethodGet, "/cached_file")
+	assert.Equal(t, http.StatusOK, w1.Code)
+	etag := w1.Header().Get("ETag")
+	lastMod := w1.Header().Get("Last-Modified")
+	assert.NotEmpty(t, etag)
+	assert.NotEmpty(t, lastMod)
+
+	// Second request with If-None-Match header
+	req := httptest.NewRequest("GET", "/cached_file", nil)
+	req.Header.Set("If-None-Match", etag)
+	w2 := httptest.NewRecorder()
+	router.ServeHTTP(w2, req)
+	assert.Equal(t, http.StatusNotModified, w2.Code)
+	assert.Empty(t, w2.Body.String())
+
+	// Third request with If-Modified-Since header
+	req2 := httptest.NewRequest("GET", "/cached_file", nil)
+	req2.Header.Set("If-Modified-Since", lastMod)
+	w3 := httptest.NewRecorder()
+	router.ServeHTTP(w3, req2)
+	assert.Equal(t, http.StatusNotModified, w3.Code)
+	assert.Empty(t, w3.Body.String())
+}
+
+func TestRouteUltraFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Ultra Fast Static Content")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.UltraFastStaticFile("/ultra_file", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/ultra_file")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Ultra Fast Static Content", w.Body.String())
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+}
+
+func TestRouteSuperFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Super Fast Static Content")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.SuperFastStaticFile("/super_file", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/super_file")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Super Fast Static Content", w.Body.String())
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+	assert.NotEmpty(t, w.Header().Get("Content-Type"))
+}
+
+func TestRouteSuperFastStaticFileCaching(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Test Super Fast Caching")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.SuperFastStaticFile("/super_cached", f.Name())
+
+	// First request to get ETag
+	w1 := PerformRequest(router, http.MethodGet, "/super_cached")
+	assert.Equal(t, http.StatusOK, w1.Code)
+	etag := w1.Header().Get("ETag")
+	assert.NotEmpty(t, etag)
+
+	// Second request with If-None-Match header
+	req := httptest.NewRequest("GET", "/super_cached", nil)
+	req.Header.Set("If-None-Match", etag)
+	w2 := httptest.NewRecorder()
+	router.ServeHTTP(w2, req)
+	assert.Equal(t, http.StatusNotModified, w2.Code)
+	assert.Empty(t, w2.Body.String())
+}
+
+func TestRouteLightningFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Lightning Fast Static Content")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.LightningFastStaticFile("/lightning_file", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/lightning_file")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Lightning Fast Static Content", w.Body.String())
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.NotEmpty(t, w.Header().Get("Last-Modified"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+	assert.NotEmpty(t, w.Header().Get("Content-Type"))
+}
+
+func TestRouteLightningFastStaticFileCaching(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Test Lightning Fast Caching")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.LightningFastStaticFile("/lightning_cached", f.Name())
+
+	// First request to get ETag
+	w1 := PerformRequest(router, http.MethodGet, "/lightning_cached")
+	assert.Equal(t, http.StatusOK, w1.Code)
+	etag := w1.Header().Get("ETag")
+	assert.NotEmpty(t, etag)
+
+	// Second request with If-None-Match header
+	req := httptest.NewRequest("GET", "/lightning_cached", nil)
+	req.Header.Set("If-None-Match", etag)
+	w2 := httptest.NewRecorder()
+	router.ServeHTTP(w2, req)
+	assert.Equal(t, http.StatusNotModified, w2.Code)
+	assert.Empty(t, w2.Body.String())
+}
+
+func TestRoutePlasmaFastStaticFile(t *testing.T) {
+	// SETUP file
+	testRoot, _ := os.Getwd()
+	f, err := os.CreateTemp(testRoot, "")
+	if err != nil {
+		t.Error(err)
+	}
+	defer os.Remove(f.Name())
+	_, err = f.WriteString("Plasma Fast Static Content")
+	require.NoError(t, err)
+	f.Close()
+
+	// SETUP gin
+	router := New()
+	router.PlasmaFastStaticFile("/plasma_file", f.Name())
+
+	w := PerformRequest(router, http.MethodGet, "/plasma_file")
+	
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "Plasma Fast Static Content", w.Body.String())
+	
+	// Check caching headers
+	assert.NotEmpty(t, w.Header().Get("ETag"))
+	assert.Equal(t, "public, max-age=3600", w.Header().Get("Cache-Control"))
+	assert.NotEmpty(t, w.Header().Get("Content-Type"))
+}
+
 func TestRouteNotAllowedEnabled(t *testing.T) {
 	router := New()
 	router.HandleMethodNotAllowed = true

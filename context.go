@@ -1220,6 +1220,82 @@ func (c *Context) FileFromFS(filepath string, fs http.FileSystem) {
 	http.FileServer(fs).ServeHTTP(c.Writer, c.Request)
 }
 
+// FastFile writes the specified file with optimized caching headers.
+// This provides significant performance improvements through ETag and Last-Modified headers.
+func (c *Context) FastFile(filepath string) {
+	// Get file info for caching
+	if stat, err := os.Stat(filepath); err == nil {
+		etag := generateETag(stat.ModTime(), stat.Size())
+		lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
+		
+		// Set caching headers
+		c.Header("ETag", etag)
+		c.Header("Last-Modified", lastMod)
+		c.Header("Cache-Control", "public, max-age=3600")
+		
+		// Check if-none-match
+		if c.GetHeader("If-None-Match") == etag {
+			c.Status(http.StatusNotModified)
+			return
+		}
+		
+		// Check if-modified-since
+		if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
+			if t, err := time.Parse(http.TimeFormat, ifModSince); err == nil {
+				if !stat.ModTime().After(t) {
+					c.Status(http.StatusNotModified)
+					return
+				}
+			}
+		}
+	}
+	
+	http.ServeFile(c.Writer, c.Request, filepath)
+}
+
+// FastFileFromFS writes the specified file from http.FileSystem with optimized caching.
+func (c *Context) FastFileFromFS(filepath string, fs http.FileSystem) {
+	defer func(old string) {
+		c.Request.URL.Path = old
+	}(c.Request.URL.Path)
+
+	c.Request.URL.Path = filepath
+
+	// Try to get file info for caching
+	if f, err := fs.Open(filepath); err == nil {
+		if stat, err := f.Stat(); err == nil {
+			etag := generateETag(stat.ModTime(), stat.Size())
+			lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
+			
+			// Set caching headers
+			c.Header("ETag", etag)
+			c.Header("Last-Modified", lastMod)
+			c.Header("Cache-Control", "public, max-age=3600")
+			
+			// Check if-none-match
+			if c.GetHeader("If-None-Match") == etag {
+				c.Status(http.StatusNotModified)
+				f.Close()
+				return
+			}
+			
+			// Check if-modified-since
+			if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
+				if t, err := time.Parse(http.TimeFormat, ifModSince); err == nil {
+					if !stat.ModTime().After(t) {
+						c.Status(http.StatusNotModified)
+						f.Close()
+						return
+					}
+				}
+			}
+		}
+		f.Close()
+	}
+
+	http.FileServer(fs).ServeHTTP(c.Writer, c.Request)
+}
+
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
 
 func escapeQuotes(s string) string {
