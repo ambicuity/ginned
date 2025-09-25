@@ -108,7 +108,7 @@ func parseAccept(acceptHeader string) []string {
 	if acceptHeader == "" {
 		return nil
 	}
-	
+
 	parts := strings.Split(acceptHeader, ",")
 	out := make([]string, 0, len(parts))
 	for _, part := range parts {
@@ -140,8 +140,8 @@ func joinPaths(absolutePath, relativePath string) string {
 	}
 
 	finalPath := path.Join(absolutePath, relativePath)
-	if len(relativePath) > 0 && relativePath[len(relativePath)-1] == '/' && 
-	   len(finalPath) > 0 && finalPath[len(finalPath)-1] != '/' {
+	if len(relativePath) > 0 && relativePath[len(relativePath)-1] == '/' &&
+		len(finalPath) > 0 && finalPath[len(finalPath)-1] != '/' {
 		return finalPath + "/"
 	}
 	return finalPath

@@ -331,7 +331,7 @@ func (group *RouterGroup) createFastStaticHandler(relativePath string, fs http.F
 
 	return func(c *Context) {
 		file := c.Param("filepath")
-		
+
 		// Check cache first
 		if info := getCachedFileInfo(file, fs); info != nil {
 			if !info.exists {
@@ -343,7 +343,7 @@ func (group *RouterGroup) createFastStaticHandler(relativePath string, fs http.F
 				c.index = -1
 				return
 			}
-			
+
 			// Set caching headers for better performance
 			if info.etag != "" {
 				c.Header("ETag", info.etag)
@@ -352,13 +352,13 @@ func (group *RouterGroup) createFastStaticHandler(relativePath string, fs http.F
 				c.Header("Last-Modified", info.modTime.UTC().Format(http.TimeFormat))
 				c.Header("Cache-Control", "public, max-age=3600") // 1 hour cache
 			}
-			
+
 			// Check if-none-match for ETag
 			if info.etag != "" && c.GetHeader("If-None-Match") == info.etag {
 				c.Status(http.StatusNotModified)
 				return
 			}
-			
+
 			// Check if-modified-since
 			if !info.modTime.IsZero() {
 				if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
@@ -371,7 +371,7 @@ func (group *RouterGroup) createFastStaticHandler(relativePath string, fs http.F
 				}
 			}
 		}
-		
+
 		// Use the standard file server for actual serving
 		fileServer.ServeHTTP(c.Writer, c.Request)
 	}
@@ -386,12 +386,12 @@ func getCachedFileInfo(filename string, fs http.FileSystem) *staticFileInfo {
 			return info
 		}
 	}
-	
+
 	// Create new cache entry
 	info := &staticFileInfo{
 		cachedTime: time.Now(),
 	}
-	
+
 	f, err := fs.Open(filename)
 	if err != nil {
 		info.exists = false
@@ -399,24 +399,24 @@ func getCachedFileInfo(filename string, fs http.FileSystem) *staticFileInfo {
 		return info
 	}
 	defer f.Close()
-	
+
 	stat, err := f.Stat()
 	if err != nil {
 		info.exists = false
 		staticFileCache.Store(filename, info)
 		return info
 	}
-	
+
 	info.exists = true
 	info.modTime = stat.ModTime()
 	info.size = stat.Size()
 	info.isDir = stat.IsDir()
-	
+
 	// Generate simple ETag from modtime and size
 	if !info.isDir {
 		info.etag = generateETag(info.modTime, info.size)
 	}
-	
+
 	staticFileCache.Store(filename, info)
 	return info
 }
@@ -429,10 +429,10 @@ func (group *RouterGroup) UltraFastStaticFile(relativePath, filepath string) IRo
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static file")
 	}
-	
+
 	// Pre-create the optimized handler
 	handler := group.createUltraFastStaticHandler(filepath)
-	
+
 	group.GET(relativePath, handler)
 	group.HEAD(relativePath, handler)
 	return group.returnObj()
@@ -448,7 +448,7 @@ func (group *RouterGroup) UltraFastStaticFS(relativePath string, fs http.FileSys
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static folder")
 	}
-	
+
 	absolutePath := group.calculateAbsolutePath(relativePath)
 	handler := group.createUltraFastStaticDirHandler(absolutePath, fs)
 	urlPattern := path.Join(relativePath, "/*filepath")
@@ -462,32 +462,32 @@ func (group *RouterGroup) UltraFastStaticFS(relativePath string, fs http.FileSys
 func (group *RouterGroup) createUltraFastStaticHandler(filepath string) HandlerFunc {
 	// Pre-compute file information at registration time
 	var cachedInfo *staticFileInfo
-	
+
 	return func(c *Context) {
 		// Use cached info or compute once
 		if cachedInfo == nil {
 			if stat, err := os.Stat(filepath); err == nil {
 				cachedInfo = &staticFileInfo{
-					exists:   true,
-					modTime:  stat.ModTime(),
-					size:     stat.Size(),
-					etag:     generateETag(stat.ModTime(), stat.Size()),
-					isDir:    stat.IsDir(),
+					exists:  true,
+					modTime: stat.ModTime(),
+					size:    stat.Size(),
+					etag:    generateETag(stat.ModTime(), stat.Size()),
+					isDir:   stat.IsDir(),
 				}
 			} else {
 				cachedInfo = &staticFileInfo{exists: false}
 			}
 		}
-		
+
 		if !cachedInfo.exists {
 			c.Status(http.StatusNotFound)
 			return
 		}
-		
+
 		// Set headers directly for maximum speed
 		writer := c.Writer
 		header := writer.Header()
-		
+
 		if cachedInfo.etag != "" {
 			header.Set("ETag", cachedInfo.etag)
 		}
@@ -495,13 +495,13 @@ func (group *RouterGroup) createUltraFastStaticHandler(filepath string) HandlerF
 			header.Set("Last-Modified", cachedInfo.modTime.UTC().Format(http.TimeFormat))
 			header.Set("Cache-Control", "public, max-age=3600")
 		}
-		
+
 		// Quick cache check
 		if cachedInfo.etag != "" && c.GetHeader("If-None-Match") == cachedInfo.etag {
 			writer.WriteHeader(http.StatusNotModified)
 			return
 		}
-		
+
 		// Use http.ServeFile for the actual serving
 		http.ServeFile(writer, c.Request, filepath)
 	}
@@ -510,10 +510,10 @@ func (group *RouterGroup) createUltraFastStaticHandler(filepath string) HandlerF
 // createUltraFastStaticDirHandler creates the most optimized directory handler
 func (group *RouterGroup) createUltraFastStaticDirHandler(absolutePath string, fs http.FileSystem) HandlerFunc {
 	fileServer := http.StripPrefix(absolutePath, http.FileServer(fs))
-	
+
 	return func(c *Context) {
 		file := c.Param("filepath")
-		
+
 		// Quick existence check with cache
 		if info := getCachedFileInfo(file, fs); info != nil && !info.exists {
 			if _, noListing := fs.(*OnlyFilesFS); noListing {
@@ -523,7 +523,7 @@ func (group *RouterGroup) createUltraFastStaticDirHandler(absolutePath string, f
 			c.Status(http.StatusNotFound)
 			return
 		}
-		
+
 		// Serve directly without additional processing
 		fileServer.ServeHTTP(c.Writer, c.Request)
 	}
@@ -536,7 +536,7 @@ func (group *RouterGroup) SuperFastStaticFile(relativePath, filepath string) IRo
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static file")
 	}
-	
+
 	handler := group.createSuperFastStaticHandler(filepath)
 	group.GET(relativePath, handler)
 	group.HEAD(relativePath, handler)
@@ -553,7 +553,7 @@ func (group *RouterGroup) createSuperFastStaticHandler(filepath string) HandlerF
 			c.Status(http.StatusNotFound)
 		}
 	}
-	
+
 	// Get file info
 	stat, err := os.Stat(filepath)
 	if err != nil {
@@ -561,29 +561,29 @@ func (group *RouterGroup) createSuperFastStaticHandler(filepath string) HandlerF
 			c.Status(http.StatusNotFound)
 		}
 	}
-	
+
 	// Pre-compute all headers
 	etag := generateETag(stat.ModTime(), stat.Size())
 	lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
 	contentType := http.DetectContentType(content)
-	
+
 	// Return ultra-optimized handler
 	return func(c *Context) {
 		writer := c.Writer
 		header := writer.Header()
-		
+
 		// Set all headers at once
 		header.Set("ETag", etag)
-		header.Set("Last-Modified", lastMod) 
+		header.Set("Last-Modified", lastMod)
 		header.Set("Cache-Control", "public, max-age=3600")
 		header.Set("Content-Type", contentType)
-		
+
 		// Quick cache check
 		if c.GetHeader("If-None-Match") == etag {
 			writer.WriteHeader(http.StatusNotModified)
 			return
 		}
-		
+
 		// Check if-modified-since
 		if ifModSince := c.GetHeader("If-Modified-Since"); ifModSince != "" {
 			if t, err := time.Parse(http.TimeFormat, ifModSince); err == nil {
@@ -593,7 +593,7 @@ func (group *RouterGroup) createSuperFastStaticHandler(filepath string) HandlerF
 				}
 			}
 		}
-		
+
 		// Write content directly
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(content)
@@ -607,7 +607,7 @@ func (group *RouterGroup) LightningFastStaticFile(relativePath, filepath string)
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static file")
 	}
-	
+
 	handler := group.createLightningFastStaticHandler(filepath)
 	group.GET(relativePath, handler)
 	group.HEAD(relativePath, handler)
@@ -623,7 +623,7 @@ func (group *RouterGroup) createLightningFastStaticHandler(filepath string) Hand
 			c.Status(http.StatusNotFound)
 		}
 	}
-	
+
 	// Get file info
 	stat, err := os.Stat(filepath)
 	if err != nil {
@@ -631,12 +631,12 @@ func (group *RouterGroup) createLightningFastStaticHandler(filepath string) Hand
 			c.Status(http.StatusNotFound)
 		}
 	}
-	
+
 	// Pre-compute all headers
 	etag := generateETag(stat.ModTime(), stat.Size())
 	lastMod := stat.ModTime().UTC().Format(http.TimeFormat)
 	contentType := http.DetectContentType(content)
-	
+
 	// Return lightning-optimized handler
 	return func(c *Context) {
 		// Quick cache check first
@@ -644,16 +644,16 @@ func (group *RouterGroup) createLightningFastStaticHandler(filepath string) Hand
 			c.Status(http.StatusNotModified)
 			return
 		}
-		
+
 		writer := c.Writer
 		header := writer.Header()
-		
+
 		// Set headers efficiently
 		header.Set("ETag", etag)
 		header.Set("Last-Modified", lastMod)
 		header.Set("Cache-Control", "public, max-age=3600")
 		header.Set("Content-Type", contentType)
-		
+
 		// Write response directly
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(content)
@@ -667,7 +667,7 @@ func (group *RouterGroup) PlasmaFastStaticFile(relativePath, filepath string) IR
 	if strings.Contains(relativePath, ":") || strings.Contains(relativePath, "*") {
 		panic("URL parameters can not be used when serving a static file")
 	}
-	
+
 	handler := group.createPlasmaFastStaticHandler(filepath)
 	group.GET(relativePath, handler)
 	group.HEAD(relativePath, handler)
@@ -683,35 +683,35 @@ func (group *RouterGroup) createPlasmaFastStaticHandler(filepath string) Handler
 			c.Writer.WriteHeader(http.StatusNotFound)
 		}
 	}
-	
-	// Get file info  
+
+	// Get file info
 	stat, err := os.Stat(filepath)
 	if err != nil {
 		return func(c *Context) {
-			c.Writer.WriteHeader(http.StatusNotFound) 
+			c.Writer.WriteHeader(http.StatusNotFound)
 		}
 	}
-	
+
 	// Pre-compute all headers
 	etag := generateETag(stat.ModTime(), stat.Size())
 	contentType := http.DetectContentType(content)
-	
+
 	// Return plasma-optimized handler that minimizes all operations
 	return func(c *Context) {
 		writer := c.Writer
-		
+
 		// Ultra-fast cache check
 		if c.GetHeader("If-None-Match") == etag {
 			writer.WriteHeader(http.StatusNotModified)
 			return
 		}
-		
+
 		// Set headers efficiently using Set instead of direct assignment
 		header := writer.Header()
 		header.Set("ETag", etag)
 		header.Set("Cache-Control", "public, max-age=3600")
 		header.Set("Content-Type", contentType)
-		
+
 		// Write response with minimal overhead
 		writer.WriteHeader(http.StatusOK)
 		writer.Write(content)

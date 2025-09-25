@@ -353,7 +353,7 @@ func (engine *Engine) rebuild405Handlers() {
 }
 
 func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
-	assert1(path[0] == slash[0], "path must begin with '/'")  
+	assert1(path[0] == slash[0], "path must begin with '/'")
 	assert1(method != "", "HTTP method can not be empty")
 	assert1(len(handlers) > 0, "there must be at least one handler")
 

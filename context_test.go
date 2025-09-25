@@ -26,10 +26,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-contrib/sse"
 	"github.com/ambicuity/ginned/binding"
 	"github.com/ambicuity/ginned/codec/json"
 	testdata "github.com/ambicuity/ginned/testdata/protoexample"
+	"github.com/gin-contrib/sse"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -245,7 +245,7 @@ func TestSaveUploadedFileWithPermission(t *testing.T) {
 	f, err := c.FormFile("file")
 	require.NoError(t, err)
 	assert.Equal(t, "permission_test", f.Filename)
-	
+
 	// Create a temporary directory with unique name to avoid conflicts in parallel tests
 	tempDir, err := os.MkdirTemp("", "permission_test_dir_*")
 	require.NoError(t, err)
@@ -253,10 +253,10 @@ func TestSaveUploadedFileWithPermission(t *testing.T) {
 		os.RemoveAll(tempDir)
 	})
 	tempPath := filepath.Join(tempDir, "subdir", "permission_test")
-	
+
 	var mode fs.FileMode = 0o755
 	require.NoError(t, c.SaveUploadedFile(f, tempPath, mode))
-	
+
 	info, err := os.Stat(filepath.Dir(tempPath))
 	require.NoError(t, err)
 	assert.Equal(t, info.Mode().Perm(), mode)
@@ -277,14 +277,14 @@ func TestSaveUploadedFileWithPermissionFailed(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "permission_test", f.Filename)
 	var mode fs.FileMode = 0o644
-	
+
 	// Use a temporary directory with unique name to avoid conflicts in parallel tests
 	tempDir, err := os.MkdirTemp("", "test_dir_*")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		os.RemoveAll(tempDir)
 	})
-	
+
 	require.Error(t, c.SaveUploadedFile(f, filepath.Join(tempDir, "permission_test"), mode))
 }
 
