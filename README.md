@@ -51,7 +51,7 @@ Gin combines the simplicity of Express.js-style routing with Go's performance ch
 With [Go's module support](https://go.dev/wiki/Modules#how-to-use-modules), simply import Gin in your code and Go will automatically fetch it during build:
 
 ```go
-import "github.com/gin-gonic/gin"
+import "github.com/ambicuity/ginned"
 ```
 
 ### Your First Gin Application
@@ -64,7 +64,7 @@ package main
 import (
   "net/http"
 
-  "github.com/gin-gonic/gin"
+  "github.com/ambicuity/ginned"
 )
 
 func main() {

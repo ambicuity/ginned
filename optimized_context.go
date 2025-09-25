@@ -5,7 +5,7 @@
 package gin
 
 import (
-	"github.com/gin-gonic/gin/codec/json"
+	"github.com/ambicuity/ginned/codec/json"
 )
 
 // FastJSON renders JSON response with minimal allocations

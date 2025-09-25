@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/ambicuity/ginned"
 )
 
 // Example high-performance Gin server with all optimizations enabled
